@@ -1,0 +1,3 @@
+# kriegspiel
+
+Literally a wargame.
