@@ -12,4 +12,4 @@ module Kriegspiel.Game.Tile (
 
 -- | A tile of the board.
 data Tile = Plain | Fortress | Mountain | Pass
-  deriving Eq
+  deriving (Eq, Show)
