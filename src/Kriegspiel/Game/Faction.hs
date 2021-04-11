@@ -13,6 +13,7 @@ module Kriegspiel.Game.Faction (
 
 -- | One of the two factions.
 data Faction = North | South
+  deriving (Eq, Show)
 
 -- | Get the other faction.
 other :: Faction -> Faction
