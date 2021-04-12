@@ -25,7 +25,7 @@ data Unit = Supply
           | Cavalry
           | Artillery
           | MountedArtillery
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 -- | Get the speed of a unit.
 speed :: Unit -> Int
