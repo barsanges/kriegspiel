@@ -12,6 +12,7 @@ module Kriegspiel.Game.Unit (
   range,
   maxrange,
   ostrength,
+  cstrength,
   dstrength
   ) where
 
@@ -57,6 +58,10 @@ ostrength Infantry = 4
 ostrength Cavalry = 4
 ostrength Artillery = 5
 ostrength MountedArtillery = 5
+
+-- | Get the offensive strength of the cavalry when it charges.
+cstrength :: Int
+cstrength = 7
 
 -- | Get the defensive strength of a unit.
 dstrength :: Unit -> Tile -> Int
