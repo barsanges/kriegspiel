@@ -8,6 +8,7 @@ A unit on the board.
 
 module Kriegspiel.Game.Unit (
   Unit(..),
+  military,
   speed,
   range,
   maxrange,
@@ -19,18 +20,27 @@ module Kriegspiel.Game.Unit (
 import Kriegspiel.Game.Tile
 
 -- | A unit on the board.
-data Unit = Supply
-          | MountedSupply
+data Unit = Supplier
+          | MountedSupplier
           | Infantry
           | Cavalry
           | Artillery
           | MountedArtillery
   deriving (Eq, Show, Ord)
 
+-- | Test if a unit is a military unit or a supply unit.
+military :: Unit -> Bool
+military Supplier = False
+military MountedSupplier = False
+military Infantry = True
+military Cavalry = True
+military Artillery = True
+military MountedArtillery = True
+
 -- | Get the speed of a unit.
 speed :: Unit -> Int
-speed Supply = 1
-speed MountedSupply = 2
+speed Supplier = 1
+speed MountedSupplier = 2
 speed Infantry = 1
 speed Cavalry = 2
 speed Artillery = 1
@@ -38,8 +48,8 @@ speed MountedArtillery = 2
 
 -- | Get the range of a unit.
 range :: Unit -> Int
-range Supply = 2
-range MountedSupply = 2
+range Supplier = 2
+range MountedSupplier = 2
 range Infantry = 2
 range Cavalry = 2
 range Artillery = 3
@@ -52,8 +62,8 @@ maxrange = 4 -- The maximal range of a charge.
 -- | Get the offensive strength of a unit (without taking into account the
 -- possibility for the cavalry to charge).
 ostrength :: Unit -> Int
-ostrength Supply = 0
-ostrength MountedSupply = 0
+ostrength Supplier = 0
+ostrength MountedSupplier = 0
 ostrength Infantry = 4
 ostrength Cavalry = 4
 ostrength Artillery = 5
@@ -65,8 +75,8 @@ cstrength = 7
 
 -- | Get the defensive strength of a unit.
 dstrength :: Unit -> Tile -> Int
-dstrength Supply _ = 1
-dstrength MountedSupply _ = 1
+dstrength Supplier _ = 1
+dstrength MountedSupplier _ = 1
 dstrength Infantry Fortress = 10
 dstrength Infantry Pass = 8
 dstrength Infantry _ = 6
