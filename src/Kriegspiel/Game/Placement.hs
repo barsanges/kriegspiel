@@ -69,7 +69,7 @@ merge (GS phase b) (GS phase' b') = case (phase, phase') of
                                   }
       newb = foldr go b (upositions b' (pplayer p'))
       go :: Position -> Board -> Board
-      go p0 b0 = case funit b0 p0 of
+      go p0 b0 = case funit b' p0 of
         Nothing -> b0 -- Should not happen
         Just (u0, f0) -> add' b0 p0 u0 f0
   _ -> Nothing
