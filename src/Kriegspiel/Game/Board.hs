@@ -160,7 +160,7 @@ mk pieces_ nstores_ sstores_ = B { pieces = pieces_,
 
 -- | An empty board.
 bempty :: Board
-bempty = mk (M.empty) nstores_ sstores_
+bempty = mk M.empty nstores_ sstores_
   where
     nstores_ = Two (P 8 4) (P 15 2)
     sstores_ = Two (P 3 20) (P 23 20)
@@ -306,11 +306,11 @@ supplied b South p = S.member p (ssupply b)
 
 -- | Test if a position on the board is empty.
 free :: Board -> Position -> Bool
-free b p = if tile p == Mountain
-  then False
-  else case unit b p of
-         Nothing -> True
-         Just _ -> False
+free b p = (tile p /= Mountain) && nobody
+  where
+    nobody = case unit b p of
+               Nothing -> True
+               Just _ -> False
 
 -- | Get the tile at a given position.
 tile :: Position -> Tile

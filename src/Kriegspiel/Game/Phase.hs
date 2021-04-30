@@ -17,7 +17,6 @@ module Kriegspiel.Game.Phase (
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Kriegspiel.Game.Board
-import Kriegspiel.Game.Faction
 
 -- | A phase of the game.
 data Phase = Placing Placing'

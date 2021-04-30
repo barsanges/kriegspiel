@@ -101,6 +101,4 @@ defence b f p (Star s) = sum (fmap go1 s)
 
 -- | Test if a unit may escape after having been defeated.
 mayEscape :: Board -> Faction -> Position -> Bool
-mayEscape b f p = if supplied b f p
-  then any (free b) (neighbors p)
-  else False
+mayEscape b f p = (supplied b f p) && (any (free b) (neighbors p))
