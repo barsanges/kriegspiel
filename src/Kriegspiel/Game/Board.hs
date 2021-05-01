@@ -17,6 +17,7 @@ module Kriegspiel.Game.Board (
   Supply(..),
   width,
   height,
+  mkPosition,
   bempty,
   half,
   northern,
@@ -79,6 +80,12 @@ width = 25
 -- | The height of the board.
 height :: Int
 height = 20
+
+-- | Make a position.
+mkPosition :: Int -> Int -> Maybe Position
+mkPosition x y = if (x >= 1) && (x <= width) && (y >= 1) && (y <= height)
+                 then Just (P x y)
+                 else Nothing
 
 -- | Get all the positions supplied for a given faction.
 resupply :: Supply -- ^ Stores
