@@ -62,6 +62,7 @@ data Position = P Int Int
 -- element of the list is the closest to the center of the star. The center
 -- itself is not included.
 newtype Star = Star [[Position]]
+  deriving (Eq, Show)
 
 -- | Indicates if an ennemy store has been destroyed.
 data StoreDiff = Same | First | Second
