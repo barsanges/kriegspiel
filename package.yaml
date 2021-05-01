@@ -17,3 +17,12 @@ dependencies:
 
 library:
   source-dirs: src
+
+tests:
+  ks-test:
+    main:                Spec.hs
+    source-dirs:         test
+    dependencies:
+    - kriegspiel
+    - hspec
+    - QuickCheck
