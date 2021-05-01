@@ -56,7 +56,7 @@ data Board = B { pieces :: M.Map Position (Unit, Faction),
 
 -- | A position on the board.
 data Position = P Int Int
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 -- | 8 lines of positions (one for each direction). In each line, the first
 -- element of the list is the closest to the center of the star. The center
