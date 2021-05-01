@@ -238,7 +238,7 @@ dist (P x y) (P u v) = max (abs $ x - u) (abs $ y - v)
 -- according to the L1 norm. The center of the circle (i.e.: the given
 -- position) is not included in the result.
 circle :: Position -> Int -> S.Set Position
-circle (P x y) n = S.fromList $ [P u v | u <- xs, v <- ys]
+circle (P x y) n = S.delete (P x y) (S.fromList $ [P u v | u <- xs, v <- ys])
   where
     xs = [(max 1 (x - n))..(min (x + n) width)]
     ys = [(max 1 (y - n))..(min (y + n) height)]
