@@ -18,6 +18,14 @@ import Kriegspiel.Game.Board
 p_ :: Int -> Int -> Position
 p_ x y = fromJust $ mkPosition x y
 
+b1 :: Board
+b1 = let go (p, u, f) b = add' b p u f
+     in foldr go bempty [(p_ 15 10, Supplier, North),
+                         (p_ 17 4, Infantry, North),
+                         (p_ 18 10, Cavalry, North),
+                         (p_ 25 12, Artillery, North),
+                         (p_ 21 8, Infantry, South)]
+
 spec :: Spec
 spec = do
   describe "circle" $ do
@@ -209,3 +217,84 @@ spec = do
 
     it "computes the L1 distance between two positions (5)" $
       dist (p_ 1 1) (p_ 25 20) `shouldBe` 24
+
+  describe "unit" $ do
+    it "gets the unit at a given position (1)" $
+      unit b1 (p_ 15 10) `shouldBe` Just Supplier
+
+    it "gets the unit at a given position (2)" $
+      unit b1 (p_ 17 4) `shouldBe` Just Infantry
+
+    it "gets the unit at a given position (3)" $
+      unit b1 (p_ 18 10) `shouldBe` Just Cavalry
+
+    it "gets the unit at a given position (4)" $
+      unit b1 (p_ 25 12) `shouldBe` Just Artillery
+
+    it "gets the unit at a given position (5)" $
+      unit b1 (p_ 21 8) `shouldBe` Just Infantry
+
+    it "gets the unit at a given position (6)" $
+      unit b1 (p_ 15 2) `shouldBe` Nothing
+
+  describe "funit" $ do
+    it "gets the unit and its faction at a given position (1)" $
+      funit b1 (p_ 15 10) `shouldBe` Just (Supplier, North)
+
+    it "gets the unit and its faction at a given position (2)" $
+      funit b1 (p_ 17 4) `shouldBe` Just (Infantry, North)
+
+    it "gets the unit and its faction at a given position (3)" $
+      funit b1 (p_ 18 10) `shouldBe` Just (Cavalry, North)
+
+    it "gets the unit and its faction at a given position (4)" $
+      funit b1 (p_ 25 12) `shouldBe` Just (Artillery, North)
+
+    it "gets the unit and its faction at a given position (5)" $
+      funit b1 (p_ 21 8) `shouldBe` Just (Infantry, South)
+
+    it "gets the unit and its faction at a given position (6)" $
+      funit b1 (p_ 15 2) `shouldBe` Nothing
+
+
+  describe "upositions" $ do
+    it "gets the positions of all units of a given faction (1)" $
+      upositions b1 North `shouldBe` S.fromList [p_ 15 10,
+                                                 p_ 17 4,
+                                                 p_ 18 10,
+                                                 p_ 25 12]
+
+    it "gets the positions of all units of a given faction (2)" $
+      upositions b1 South `shouldBe` S.fromList [p_ 21 8]
+
+  describe "spositions" $ do
+    it "gets the positions of the stores of a given faction (1)" $
+      spositions b1 North `shouldBe` (Two (p_ 15 2) (p_ 8 4))
+
+    it "gets the positions of the stores of a given faction (2)" $
+      spositions b1 South `shouldBe` (Two (p_ 3 20) (p_ 23 20))
+
+  describe "supplied" $ do
+    it "tests if a position is supplied for a given faction (1)" $
+      supplied b1 North (p_ 15 10) `shouldBe` True
+
+    it "tests if a position is supplied for a given faction (2)" $
+      supplied b1 North (p_ 17 4) `shouldBe` True
+
+    it "tests if a position is supplied for a given faction (3)" $
+      supplied b1 North (p_ 18 10) `shouldBe` True
+
+    it "tests if a position is supplied for a given faction (4)" $
+      supplied b1 North (p_ 25 12) `shouldBe` False
+
+    it "tests if a position is supplied for a given faction (5)" $
+      supplied b1 North (p_ 19 9) `shouldBe` True
+
+    it "tests if a position is supplied for a given faction (6)" $
+      supplied b1 North (p_ 8 2) `shouldBe` True
+
+    it "tests if a position is supplied for a given faction (7)" $
+      supplied b1 South (p_ 3 2) `shouldBe` True
+
+    it "tests if a position is supplied for a given faction (8)" $
+      supplied b1 South (p_ 21 8) `shouldBe` False
