@@ -88,7 +88,7 @@ pass b m = GS (pend m) b
 
 -- | Get all units that are allowed to move.
 movable :: Board -> Moving' -> S.Set Position
-movable b m = S.difference (moved m) (upositions b (mplayer m))
+movable b m = S.difference (upositions b (mplayer m)) (moved m)
 
 -- | Enumerate all possible movements starting from a given position.
 enumerate :: Board
