@@ -26,6 +26,57 @@ b1 = let go (p, u, f) b = add' b p u f
                          (p_ 25 12, Artillery, North),
                          (p_ 21 8, Infantry, South)]
 
+addTest01 :: (StoreDiff, Maybe (Unit, Faction))
+addTest01 = (sd, muf)
+  where
+    pos = (p_ 8 2)
+    (sd, b) = add bempty pos Infantry North
+    muf = funit b pos
+
+addTest02 :: (StoreDiff, Maybe (Unit, Faction))
+addTest02 = (sd, muf)
+  where
+    pos = (p_ 23 20)
+    (sd, b) = add bempty pos Cavalry South
+    muf = funit b pos
+
+addTest03 :: (StoreDiff, Maybe (Unit, Faction))
+addTest03 = (sd, muf)
+  where
+    pos = (p_ 8 4)
+    (sd, b) = add bempty pos Cavalry South
+    muf = funit b pos
+
+mvTest01 :: (StoreDiff, Maybe (Unit, Faction), Maybe (Unit, Faction))
+mvTest01 = (sd, muf1, muf2)
+  where
+    p1 = (p_ 10 6)
+    p2 = (p_ 16 15)
+    b = add' bempty p1 Infantry North
+    (sd, b') = mv b p1 p2
+    muf1 = funit b' p1
+    muf2 = funit b' p2
+
+mvTest02 :: (StoreDiff, Maybe (Unit, Faction), Maybe (Unit, Faction))
+mvTest02 = (sd, muf1, muf2)
+  where
+    p1 = (p_ 24 18)
+    p2 = (p_ 15 2)
+    b = add' bempty p1 Artillery South
+    (sd, b') = mv b p1 p2
+    muf1 = funit b' p1
+    muf2 = funit b' p2
+
+mvTest03 :: (StoreDiff, Maybe (Unit, Faction), Maybe (Unit, Faction))
+mvTest03 = (sd, muf1, muf2)
+  where
+    p1 = (p_ 3 20)
+    p2 = (p_ 23 20)
+    b = add' bempty p1 MountedArtillery North
+    (sd, b') = mv b p1 p2
+    muf1 = funit b' p1
+    muf2 = funit b' p2
+
 spec :: Spec
 spec = do
   describe "circle" $ do
@@ -256,7 +307,6 @@ spec = do
     it "gets the unit and its faction at a given position (6)" $
       funit b1 (p_ 15 2) `shouldBe` Nothing
 
-
   describe "upositions" $ do
     it "gets the positions of all units of a given faction (1)" $
       upositions b1 North `shouldBe` S.fromList [p_ 15 10,
@@ -298,3 +348,43 @@ spec = do
 
     it "tests if a position is supplied for a given faction (8)" $
       supplied b1 South (p_ 21 8) `shouldBe` False
+
+  describe "add" $ do
+    it "adds a unit to the board (1)" $
+      addTest01 `shouldBe` (Same, Just (Infantry, North))
+
+    it "adds a unit to the board (2)" $
+      addTest02 `shouldBe` (Same, Just (Cavalry, South))
+
+    it "adds a unit to the board (3)" $
+      addTest03 `shouldBe` (First, Just (Cavalry, South))
+
+  describe "add'" $ do
+    it "adds a unit to the board (1)" $
+      funit (add' bempty (p_ 8 2) Infantry North) (p_ 8 2) `shouldBe` Just (Infantry, North)
+
+    it "adds a unit to the board (2)" $
+      funit (add' bempty (p_ 23 20) Cavalry South) (p_ 23 20) `shouldBe` Just (Cavalry, South)
+
+    it "adds a unit to the board (3)" $
+      funit (add' bempty (p_ 8 4) Cavalry South) (p_ 8 4) `shouldBe` Just (Cavalry, South)
+
+  describe "rm" $ do
+    it "removes a unit from the board (1)" $
+      rm (add' bempty (p_ 19 12) Infantry North) (p_ 19 12) `shouldBe` bempty
+
+    it "removes a unit from the board (2)" $
+      rm (add' bempty (p_ 15 2) Infantry North) (p_ 15 2) `shouldBe` bempty
+
+    it "removes a unit from the board (3)" $
+      rm bempty (p_ 15 2) `shouldBe` bempty
+
+  describe "mv" $ do
+    it "moves a unit on the board (1)" $
+      mvTest01 `shouldBe` (Same, Nothing, Just (Infantry, North))
+
+    it "moves a unit on the board (2)" $
+      mvTest02 `shouldBe` (First, Nothing, Just (Artillery, South))
+
+    it "moves a unit on the board (3)" $
+      mvTest03 `shouldBe` (Second, Nothing, Just (MountedArtillery, North))
