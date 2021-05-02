@@ -53,6 +53,7 @@ data Board = B { pieces :: M.Map Position (Unit, Faction),
                  sstores :: Supply,
                  ssupply :: S.Set Position
                }
+  deriving (Eq, Show)
 
 -- | A position on the board.
 data Position = P Int Int
@@ -66,13 +67,21 @@ newtype Star = Star [[Position]]
 
 -- | Indicates if an ennemy store has been destroyed.
 data StoreDiff = Same | First | Second
-  deriving Eq
+  deriving (Eq, Show)
 
 -- | Position of the supply sources of a faction.
 data Supply = Zero
             | One Position
             | Two Position Position
-  deriving Eq
+  deriving Show
+
+instance Eq Supply where
+  Zero == Zero = True
+  Zero == _ = False
+  One p == One q = p == q
+  One _ == _ = False
+  Two p1 p2 == Two q1 q2 = ((p1 == q1) && (p2 == q2)) || ((p1 == q2) && (p2 == q1))
+  Two _ _ == _ = False
 
 -- | The width of the board.
 width :: Int
