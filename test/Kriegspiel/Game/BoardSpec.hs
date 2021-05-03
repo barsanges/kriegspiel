@@ -1,7 +1,7 @@
 {- |
    Module      : Kriegspiel.Game.BoardSpec
-   Copyright   : Copyright (C) 2020 barsanges
-   License     : GNU GPL, version 3
+   Copyright   : Copyright (C) 2021 barsanges
+   License     : Non-Profit Open Software License 3.0
 
 Test the module Kriegspiel.Game.Board.
 -}
