@@ -88,7 +88,11 @@ pass b m = GS (pend m) b
 
 -- | Get all units that are allowed to move.
 movable :: Board -> Moving' -> S.Set Position
-movable b m = S.difference (upositions b (mplayer m)) (moved m)
+movable b m = allowed
+  where
+    everyone = upositions b (mplayer m)
+    notMoved = S.difference everyone (moved m)
+    allowed = S.filter (supplied b (mplayer m)) notMoved
 
 -- | Enumerate all possible movements starting from a given position.
 enumerate :: Board
