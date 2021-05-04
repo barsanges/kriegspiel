@@ -74,10 +74,11 @@ retreat b r = Mandatory x $ enumerate b (rplayer r) Forbidden (pretreat r) x
 
 -- | Get all regular admissible movements.
 move :: Board -> Moving' -> Movements
-move b m = Optional p ms
+move b m = Optional p ms'
   where
     p = pass b m
     ms = fromKeys (enumerate b (mplayer m) a (pmove m)) (movable b m)
+    ms' = M.filter (not . M.null) ms
     a = if attack m
         then Forbidden
         else Allowed
