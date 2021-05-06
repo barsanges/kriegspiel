@@ -17,7 +17,7 @@ import Kriegspiel.Game.GameState
 import Kriegspiel.Game.Utils
 
 -- | All admissible movements for a given game state.
-data Movements = None
+data Movements = None GameState
                | Mandatory Position (M.Map Position GameState)
                | Optional GameState (M.Map Position (M.Map Position GameState))
 
@@ -30,7 +30,7 @@ movements :: GameState -> Movements
 movements (GS phase b) = case phase of
   Retreating r -> retreat b r
   Moving m -> move b m
-  _ -> None
+  _ -> None (GS phase b)
 
 -- | Build the phase following a retreat.
 pretreat :: Retreating' -> Position -> StoreDiff -> Phase
@@ -68,13 +68,22 @@ pend m = if attack m
 
 -- | Get all admissible movements for a retreat.
 retreat :: Board -> Retreating' -> Movements
-retreat b r = Mandatory x $ enumerate b (rplayer r) Forbidden (pretreat r) x
+retreat b r = if M.null ms
+              then move (rm b x) (Moving' { nmoves = 0,
+                                            mplayer = rplayer r,
+                                            mshaken = Nothing,
+                                            moved = S.empty,
+                                            attack = False })
+              else Mandatory x ms
   where
     x = rshaken r
+    ms = enumerate b (rplayer r) Forbidden (pretreat r) x
 
 -- | Get all regular admissible movements.
 move :: Board -> Moving' -> Movements
-move b m = Optional p ms'
+move b m = if M.null ms' || nmoves m > 4
+           then None (GS (pend m) b)
+           else Optional p ms'
   where
     p = pass b m
     ms = fromKeys (enumerate b (mplayer m) a (pmove m)) (movable b m)
