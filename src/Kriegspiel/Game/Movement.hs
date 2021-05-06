@@ -68,7 +68,7 @@ pend m = if attack m
 
 -- | Get all admissible movements for a retreat.
 retreat :: Board -> Retreating' -> Movements
-retreat b r = if M.null ms
+retreat b r = if M.null ms || not (supplied b (rplayer r) x)
               then move (rm b x) (Moving' { nmoves = 0,
                                             mplayer = rplayer r,
                                             mshaken = Nothing,
