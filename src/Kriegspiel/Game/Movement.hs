@@ -81,9 +81,11 @@ retreat b r = if M.null ms
 
 -- | Get all regular admissible movements.
 move :: Board -> Moving' -> Movements
-move b m = if M.null ms' || nmoves m > 4
-           then None (GS (pend m) b)
-           else Optional p ms'
+move b m = if spositions b (other $ mplayer m) == Zero
+           then None (GS (Victory $ mplayer m) b)
+           else if M.null ms' || nmoves m > 4
+                then None (GS (pend m) b)
+                else Optional p ms'
   where
     p = pass b m
     ms = fromKeys (enumerate b (mplayer m) a (pmove m)) (movable b m)
