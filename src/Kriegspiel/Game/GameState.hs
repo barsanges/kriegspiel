@@ -17,3 +17,4 @@ import Kriegspiel.Game.Phase
 
 -- | State of the game, i.e. board and current phase.
 data GameState = GS Phase Board
+  deriving (Eq, Show)
