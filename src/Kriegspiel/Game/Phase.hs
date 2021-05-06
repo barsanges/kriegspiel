@@ -24,16 +24,19 @@ data Phase = Placing Placing'
            | Moving Moving'
            | Attacking Attacking'
            | Victory Faction
+  deriving (Eq, Show)
 
 -- | Informations related to a "Placing" phase.
 data Placing' = Placing' { pplayer :: Faction,
                            ptodo :: M.Map Unit Int
                          }
+  deriving (Eq, Show)
 
 -- | Informations related to a "Retreating" phase.
 data Retreating' = Retreating' { rplayer :: Faction,
                                  rshaken :: Position
                                }
+  deriving (Eq, Show)
 
 -- | Informations related to a "Moving" phase.
 data Moving' = Moving' { nmoves :: Int,
@@ -42,8 +45,10 @@ data Moving' = Moving' { nmoves :: Int,
                          moved :: S.Set Position,
                          attack :: Bool
                        }
+  deriving (Eq, Show)
 
 -- | Informations related to an "Attacking" phase.
 data Attacking' = Attacking' { aplayer :: Faction,
                                ashaken :: Maybe Position
                              }
+  deriving (Eq, Show)
