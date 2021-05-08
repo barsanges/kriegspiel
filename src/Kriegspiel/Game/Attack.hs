@@ -27,14 +27,15 @@ data Attacks = Nil GameState
 -- | Build all admissible attacks for a given game state.
 attacks :: GameState -> Attacks
 attacks (GS phase b) = case phase of
-  Attacking a -> if S.null targets
+  Attacking a -> if M.null allowed
                  then if S.null $ upositions b (other (aplayer a))
                       then Nil (GS (Victory (aplayer a)) b)
                       else Nil pass
-                 else Attacks pass (fromKeysMaybe (resolve b a) targets)
+                 else Attacks pass allowed
     where
       pass = GS (pend a Nothing) b
       targets = upositions b (other (aplayer a))
+      allowed = (fromKeysMaybe (resolve b a) targets)
   _ -> Nil (GS phase b)
 
 -- | Build the phase after the end of the current player's turn.
