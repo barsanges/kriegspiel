@@ -19,10 +19,12 @@ import Kriegspiel.Game.Utils
 
 -- | Effect of an attack on the target.
 data AttackResult = Defeated | Destroyed
+  deriving (Eq, Show)
 
 -- | All admissible attacks for a given "Attack" turn.
 data Attacks = Nil GameState
              | Attacks GameState (M.Map Position (AttackResult, GameState))
+  deriving (Eq, Show)
 
 -- | Build all admissible attacks for a given game state.
 attacks :: GameState -> Attacks
