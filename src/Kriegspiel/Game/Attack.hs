@@ -21,16 +21,21 @@ import Kriegspiel.Game.Utils
 data AttackResult = Defeated | Destroyed
 
 -- | All admissible attacks for a given "Attack" turn.
-data Attacks = Attacks GameState (M.Map Position (AttackResult, GameState))
+data Attacks = Nil GameState
+             | Attacks GameState (M.Map Position (AttackResult, GameState))
 
 -- | Build all admissible attacks for a given game state.
-attacks :: GameState -> Maybe Attacks
+attacks :: GameState -> Attacks
 attacks (GS phase b) = case phase of
-  Attacking a -> Just $ Attacks pass (fromKeysMaybe (resolve b a) targets)
+  Attacking a -> if S.null targets
+                 then if S.null $ upositions b (other (aplayer a))
+                      then Nil (GS (Victory (aplayer a)) b)
+                      else Nil pass
+                 else Attacks pass (fromKeysMaybe (resolve b a) targets)
     where
       pass = GS (pend a Nothing) b
       targets = upositions b (other (aplayer a))
-  _ -> Nothing
+  _ -> Nil (GS phase b)
 
 -- | Build the phase after the end of the current player's turn.
 pend :: Attacking' -> Maybe Position -> Phase
