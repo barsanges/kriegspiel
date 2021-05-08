@@ -96,7 +96,7 @@ offense b a p (Star s) = sum (fmap charge s)
 
 -- | Compute the defensive strength of a faction at a given position.
 defence :: Board -> Faction -> Position -> Star -> Int
-defence b f p (Star s) = sum (fmap go1 s)
+defence b f p (Star s) = (go2 p) + sum (fmap go1 s)
   where
     go1 :: [Position] -> Int
     go1 ps = sum (fmap go2 ps)
