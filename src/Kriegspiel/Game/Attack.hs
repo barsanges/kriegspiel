@@ -42,12 +42,15 @@ attacks (GS phase b) = case phase of
 
 -- | Build the phase after the end of the current player's turn.
 pend :: Attacking' -> Maybe Position -> Phase
-pend a mp = Moving $ Moving' { nmoves = 0,
-                               mplayer = other (aplayer a),
-                               mshaken = mp,
-                               moved = S.empty,
-                               attack = False
-                             }
+pend a Nothing = Moving $ Moving' { nmoves = 0,
+                                    mplayer = other (aplayer a),
+                                    mshaken = Nothing,
+                                    moved = S.empty,
+                                    attack = False
+                                  }
+pend a (Just p) = Retreating $ Retreating' { rplayer = other (aplayer a),
+                                             rshaken = p
+                                           }
 
 -- | Resolve an attack on a given position.
 resolve :: Board -> Attacking' -> Position -> Maybe (AttackResult, GameState)
