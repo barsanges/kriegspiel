@@ -80,7 +80,7 @@ offense b a p (Star s) = sum (fmap charge s)
     charge [] = 0
     charge (p':ps) = case funit b p' of
       Nothing -> nocharge ps
-      Just (u, f') -> if (f' == f) && (u == Cavalry) && (ready p')
+      Just (u, f') -> if (f' == f) && (u == Cavalry) && (ready p') && (supplied b f p')
         then cstrength + (charge ps)
         else nocharge (p':ps)
 
@@ -90,7 +90,7 @@ offense b a p (Star s) = sum (fmap charge s)
         go :: Position -> Int
         go p' = case funit b p' of
           Nothing -> 0
-          Just (u, f') -> if (f' == f) && (dist p p' <= range u) && (ready p')
+          Just (u, f') -> if (f' == f) && (dist p p' <= range u) && (ready p') && (supplied b f p')
             then ostrength u
             else 0
 
@@ -103,7 +103,7 @@ defence b f p (Star s) = sum (fmap go1 s)
     go2 :: Position -> Int
     go2 p' = case funit b p' of
       Nothing -> 0
-      Just (u, f') -> if (f' == f) && (dist p p' <= range u)
+      Just (u, f') -> if (f' == f) && (dist p p' <= range u) && (supplied b f p')
         then dstrength u (tile p')
         else 0
 
