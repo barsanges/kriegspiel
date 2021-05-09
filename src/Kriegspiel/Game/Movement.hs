@@ -81,11 +81,10 @@ retreat b r = if M.null ms || not (supplied b (rplayer r) x)
 
 -- | Get all regular admissible movements.
 move :: Board -> Moving' -> Movements
-move b m = if spositions b (other $ mplayer m) == Zero
-           then None (GS (Victory $ mplayer m) b)
-           else if M.null ms' || nmoves m > 4
-                then None (GS (pend m) b)
-                else Optional p ms'
+move b m
+  | spositions b (other $ mplayer m) == Zero = None (GS (Victory $ mplayer m) b)
+  | M.null ms' || nmoves m > 4 = None (GS (pend m) b)
+  | otherwise = Optional p ms'
   where
     p = pass b m
     ms = fromKeys (enumerate b (mplayer m) a (pmove m)) (movable b m)
@@ -125,7 +124,7 @@ reachable b f a p = case unit b p of
   Nothing -> S.empty
   Just u -> S.filter go (circle p (speed u))
     where
-      go = if (a == Allowed) || (not $ military u)
+      go = if (a == Allowed) || not (military u)
            then tests [free b, hasPath b f p]
            else tests [free b, hasPath b f p, noAttack b f p]
 
