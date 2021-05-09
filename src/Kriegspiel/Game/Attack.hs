@@ -74,7 +74,9 @@ resolve b a p
 
 -- | Compute the offensive strength of a faction at a given position.
 offense :: Board -> Attacking' -> Position -> Star -> Int
-offense b a p (Star s) = sum (fmap charge s)
+offense b a p (Star s) = if tile p == Plain
+                         then sum (fmap charge s)
+                         else sum (fmap nocharge s)
   where
     f = aplayer a
     ready p' = (Just p') /= (ashaken a)
@@ -83,7 +85,7 @@ offense b a p (Star s) = sum (fmap charge s)
     charge [] = 0
     charge (p':ps) = case funit b p' of
       Nothing -> nocharge ps
-      Just (u, f') -> if (f' == f) && (u == Cavalry) && (ready p') && (supplied b f p')
+      Just (u, f') -> if (f' == f) && (u == Cavalry) && (ready p') && (supplied b f p') && (tile p' /= Fortress)
         then cstrength + (charge ps)
         else nocharge (p':ps)
 
