@@ -17,6 +17,8 @@ import qualified Data.Set as S
 import Kriegspiel.Game.GameState
 import Kriegspiel.Game.Utils
 
+type Placements = M.Map Position (Either GameState (M.Map Unit GameState))
+
 -- | Initialise a new game.
 initial :: Faction -> GameState
 initial f = GS phase bempty
@@ -32,24 +34,41 @@ initial f = GS phase bempty
                                }
 
 -- | All admissible placements for a given game state.
-placements :: GameState -> M.Map Position (M.Map Unit GameState)
+placements :: GameState -> Placements
 placements (GS phase b) = case phase of
-  Placing pl -> fromKeys go1 ps
+  Placing pl -> fromKeys go ps
     where
-      ps = S.filter (free b) (half (pplayer pl))
-      go1 :: Position -> M.Map Unit GameState
-      go1 p = M.mapWithKey go2 (ptodo pl)
+      me = pplayer pl
+      ps = S.filter (\ p -> tile p /= Mountain) (half me)
+
+      go :: Position -> Either GameState (M.Map Unit GameState)
+      go p = case unit b p of
+        Just u -> Left (undo p u)
+        Nothing -> Right (put p)
+
+      undo :: Position -> Unit -> GameState
+      undo p u = GS pl' b'
         where
-          go2 :: Unit -> Int -> GameState
-          go2 u n = GS pl' b'
+          todo = M.insertWith (+) u 1 (ptodo pl)
+          pl' = Placing $ Placing' { pplayer = me,
+                                     ptodo = todo
+                                   }
+          b' = rm b p
+
+      put :: Position -> M.Map Unit GameState
+      put p = M.mapWithKey h (ptodo pl)
+        where
+          h :: Unit -> Int -> GameState
+          h u n = GS pl' b'
             where
               todo = if n > 1
                      then M.insert u (n - 1) (ptodo pl)
                      else M.delete u (ptodo pl)
-              pl' = Placing $ Placing' { pplayer = pplayer pl,
+              pl' = Placing $ Placing' { pplayer = me,
                                          ptodo = todo
                                        }
               b' = add' b p u (pplayer pl)
+
   _ -> M.empty
 
 -- | Merge two game states corresponding to the placement of all units from
