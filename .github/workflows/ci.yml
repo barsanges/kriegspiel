@@ -30,6 +30,7 @@ jobs:
 
     - name: Build
       run: |
+        sudo apt-get install freeglut3-dev
         stack build --system-ghc --test --no-run-tests
 
     - name: Test
