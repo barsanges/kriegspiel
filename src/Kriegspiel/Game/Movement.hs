@@ -18,7 +18,7 @@ import Kriegspiel.Game.Utils
 
 -- | All admissible movements for a given game state.
 data Movements = None GameState
-               | Mandatory Position (M.Map Position GameState)
+               | Mandatory GameState Position (M.Map Position GameState)
                | Optional GameState (M.Map Position (M.Map Position GameState))
 
 -- | Is it allowed to destroy a store during the movement?
@@ -74,7 +74,7 @@ retreat b r = if M.null ms || not (supplied b (rplayer r) x)
                                             mshaken = Nothing,
                                             moved = S.empty,
                                             attack = False })
-              else Mandatory x ms
+              else Mandatory (GS (Retreating r) b) x ms
   where
     x = rshaken r
     ms = enumerate b (rplayer r) Forbidden (pretreat r) x

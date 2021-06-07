@@ -22,7 +22,7 @@ p_ x y = fromJust $ mkPosition x y
 
 extract :: Movements -> Maybe (M.Map Position (S.Set Position))
 extract (None _) = Nothing
-extract (Mandatory p m) = Just $ M.fromList [(p, M.keysSet m)]
+extract (Mandatory _ p m) = Just $ M.fromList [(p, M.keysSet m)]
 extract (Optional _ m) = Just $ M.map (M.keysSet) m
 
 movementSkipped :: Movements -> Bool
@@ -140,7 +140,7 @@ movementsTest08 = movements (GS phase b)
 movementsTest09 :: Bool
 movementsTest09 = case movements (GS phase b) of
                     None _ -> False
-                    Mandatory _ _ -> False
+                    Mandatory _ _ _ -> False
                     Optional (GS p b') _ -> case p of
                       Attacking _ -> b' == b
                       _ -> False
@@ -156,7 +156,7 @@ movementsTest09 = case movements (GS phase b) of
 movementsTest10 :: Bool
 movementsTest10 = case movements (GS phase b) of
                     None _ -> False
-                    Mandatory _ _ -> False
+                    Mandatory _ _ _ -> False
                     Optional (GS p b') _ -> case p of
                       Moving m -> (mplayer m == South) && (b' == b)
                       _ -> False
@@ -174,7 +174,7 @@ movementsTest11 = case movements (GS phase b) of
                     None (GS p b') -> case p of
                       Attacking _ -> b' == b
                       _ -> False
-                    Mandatory _ _ -> False
+                    Mandatory _ _ _ -> False
                     Optional _ _ -> False
   where
     phase = Moving $ Moving' { nmoves = 0,
@@ -188,7 +188,7 @@ movementsTest11 = case movements (GS phase b) of
 movementsTest12 :: Bool
 movementsTest12 = case movements (GS phase b) of
                     None _ -> False
-                    Mandatory _ _ -> False
+                    Mandatory _ _ _ -> False
                     Optional _ m -> all go (M.toList (m M.! (p_ 8 10)))
   where
     phase = Moving $ Moving' { nmoves = 0,
@@ -206,7 +206,7 @@ movementsTest12 = case movements (GS phase b) of
 movementsTest13 :: Bool
 movementsTest13 = case movements (GS phase b) of
                     None (GS _ b') -> unit b' (p_ 3 19) == Nothing
-                    Mandatory _ _ -> False
+                    Mandatory _ _ _ -> False
                     Optional _ _ -> False
   where
     phase = Retreating $ Retreating' { rplayer = North,
@@ -218,7 +218,7 @@ movementsTest13 = case movements (GS phase b) of
 movementsTest14 :: Bool
 movementsTest14 = case movements (GS phase b) of
                     None _ -> False
-                    Mandatory p m -> (p == (p_ 3 19)) && (not $ S.member (p_ 3 20) (M.keysSet m))
+                    Mandatory _ p m -> (p == (p_ 3 19)) && (not $ S.member (p_ 3 20) (M.keysSet m))
                     Optional _ _ -> False
   where
     phase = Retreating $ Retreating' { rplayer = North,
