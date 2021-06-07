@@ -7,6 +7,7 @@ Admissible placements depending on the game state.
 -}
 
 module Kriegspiel.Game.Placement (
+  Placements,
   initial,
   placements,
   merge
