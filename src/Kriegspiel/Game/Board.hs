@@ -23,6 +23,7 @@ module Kriegspiel.Game.Board (
   half,
   northern,
   southern,
+  whole,
   mv,
   rm,
   add,
@@ -36,6 +37,7 @@ module Kriegspiel.Game.Board (
   funit,
   upositions,
   spositions,
+  mstore,
   supplied,
   free,
   tile
@@ -200,6 +202,10 @@ northern = S.fromList $ [P u v | u <- [1..width], v <- [1..10]]
 southern :: S.Set Position
 southern = S.fromList $ [P u v | u <- [1..width], v <- [11..20]]
 
+-- | The whole board.
+whole :: S.Set Position
+whole = S.fromList $ [P u v | u <- [1..width], v <- [1..height]]
+
 -- | Move a piece on the board. The result indicates if a store has been
 -- destroyed in the process.
 mv :: Board -> Position -> Position -> (StoreDiff, Board)
@@ -320,6 +326,19 @@ upositions b f = M.keysSet $ M.filter (\ (_, f') -> f' == f) (pieces b)
 spositions :: Board -> Faction -> Supply
 spositions b North = nstores b
 spositions b South = sstores b
+
+-- | Indicate if there is a store at the given position.
+mstore :: Board -> Position -> Maybe Faction
+mstore b p = if go (nstores b)
+             then Just North
+             else if go (sstores b)
+                  then Just South
+                  else Nothing
+  where
+    go s = case s of
+      Zero -> False
+      One q -> p == q
+      Two q1 q2 -> (p == q1) || (p == q2)
 
 -- | Test if a position is supplied for the given faction.
 supplied :: Board -> Faction -> Position -> Bool
