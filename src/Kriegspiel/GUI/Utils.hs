@@ -10,19 +10,17 @@ module Kriegspiel.GUI.Utils (
   BitmapLib(..),
   windowHeight,
   windowWidth,
-  northPicture,
-  southPicture,
-  composed,
-  plain,
   mkBitmapLib,
   grid,
+  setMarkers,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
-  gridUpperBound,
-  place
+  gridUpperBound
   ) where
 
+import Data.Maybe ( catMaybes )
+import qualified Data.Set as S
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Bitmap ( loadBMP )
 import Kriegspiel.Game.Board
@@ -54,6 +52,19 @@ northPicture (Col p _) = p
 southPicture :: Colored -> Picture
 southPicture (Col _ p) = p
 
+-- | Get the northern version of a composable picture.
+northComposable :: Composable Colored -> Composable Picture
+northComposable (Composable c p) = Composable (northPicture c) (northPicture p)
+
+-- | Get the southern version of a composable picture.
+southComposable :: Composable Colored -> Composable Picture
+southComposable (Composable c p) = Composable (southPicture c) (southPicture p)
+
+-- | Get a faction specific version of a composable picture.
+selectComposable :: Faction -> (Composable Colored -> Composable Picture)
+selectComposable North = northComposable
+selectComposable South = southComposable
+
 -- | Get the version of the picture that is meant to be composed with other
 -- pictures.
 composed :: Composable a -> a
@@ -75,7 +86,7 @@ mkColored fp = do
 mkComposablePicture :: FilePath -> IO (Composable Picture)
 mkComposablePicture fp = do
   c <- loadBMP (fp ++ "-marker.bmp")
-  p <- loadBMP (fp ++ "-marker.bmp")
+  p <- loadBMP (fp ++ ".bmp")
   return (Composable c p)
 
 -- | Load two versions of (one for each faction) a set of pictures that can be
@@ -162,3 +173,40 @@ place pos p = translate x y p
     (i, j) = toInt pos
     x = gridLeftBound + cellEdge * (-0.5 + fromIntegral i) + lineWidth * (fromIntegral i)
     y = gridUpperBound - cellEdge * (-0.5 + fromIntegral j) - lineWidth * (fromIntegral j)
+
+-- | Draw the markers on the board.
+setMarkers :: BitmapLib -> Board -> Picture
+setMarkers blib b = pictures (catMaybes (fmap go allPositions))
+  where
+    allPositions = S.toList whole
+    go :: Position -> Maybe Picture
+    go pos = fmap (place pos) pic
+      where
+        mtp = getTile blib pos b
+        pic = case funit b pos of
+                Nothing -> fmap plain mtp
+                Just (u, f) -> case mtp of
+                  Nothing -> Just $ plain up
+                  Just tp -> Just $ pictures [composed tp, composed up]
+                  where
+                    up = getUnit blib f u
+
+-- | Get the corresponding picture for a given tile.
+getTile :: BitmapLib -> Position -> Board -> Maybe (Composable Picture)
+getTile blib pos b = case tile pos of
+  Mountain -> Just $ Composable (mountain blib) (mountain blib)
+  Fortress -> Just $ fortress blib
+  Pass -> Just $ pass blib
+  Plain -> case mstore b pos of
+    Nothing -> Nothing
+    Just f -> Just $ (selectComposable f) (store blib)
+
+-- | Get the corresponding picture for a given unit.
+getUnit :: BitmapLib -> Faction -> Unit -> Composable Picture
+getUnit blib f u = case u of
+  Supplier -> (selectComposable f) (supplier blib)
+  MountedSupplier -> (selectComposable f) (mountedSupplier blib)
+  Infantry -> (selectComposable f) (infantry blib)
+  Cavalry -> (selectComposable f) (cavalry blib)
+  Artillery -> (selectComposable f) (artillery blib)
+  MountedArtillery -> (selectComposable f) (mountedArtillery blib)
