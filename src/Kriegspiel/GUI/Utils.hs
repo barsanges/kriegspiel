@@ -19,7 +19,8 @@ module Kriegspiel.GUI.Utils (
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
-  gridUpperBound
+  gridUpperBound,
+  place
   ) where
 
 import Graphics.Gloss.Interface.Pure.Game
@@ -153,3 +154,11 @@ cellEdge = 24
 -- | Width of the line between two cells (in pixels).
 lineWidth :: Float
 lineWidth = 1
+
+-- | Place a cell at a given position on the grid.
+place :: Position -> Picture -> Picture
+place pos p = translate x y p
+  where
+    (i, j) = toInt pos
+    x = gridLeftBound + cellEdge * (-0.5 + fromIntegral i) + lineWidth * (fromIntegral i)
+    y = gridUpperBound - cellEdge * (-0.5 + fromIntegral j) - lineWidth * (fromIntegral j)
