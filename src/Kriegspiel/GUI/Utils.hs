@@ -52,6 +52,11 @@ northPicture (Col p _) = p
 southPicture :: Colored -> Picture
 southPicture (Col _ p) = p
 
+-- | Get a faction specific version of a picture.
+selectColor :: Faction -> (Colored -> Picture)
+selectColor North = northPicture
+selectColor South = southPicture
+
 -- | Get the northern version of a composable picture.
 northComposable :: Composable Colored -> Composable Picture
 northComposable (Composable c p) = Composable (northPicture c) (northPicture p)
@@ -175,21 +180,32 @@ place pos p = translate x y p
     y = gridUpperBound - cellEdge * (-0.5 + fromIntegral j) - lineWidth * (fromIntegral j)
 
 -- | Draw the markers on the board.
-setMarkers :: BitmapLib -> Board -> Picture
-setMarkers blib b = pictures (catMaybes (fmap go allPositions))
+setMarkers :: BitmapLib -> Maybe Position -> Board -> Picture
+setMarkers blib mp b = pictures (catMaybes (fmap go allPositions))
   where
     allPositions = S.toList whole
+
+    plain' :: Position -> (Composable Picture -> Picture)
+    plain' p = case mp of
+      Nothing -> plain
+      Just p' -> if p /= p'
+                 then plain
+                 else composed
+
     go :: Position -> Maybe Picture
     go pos = fmap (place pos) pic
       where
         mtp = getTile blib pos b
         pic = case funit b pos of
-                Nothing -> fmap plain mtp
+                Nothing -> fmap (plain' pos) mtp
                 Just (u, f) -> case mtp of
-                  Nothing -> Just $ plain up
-                  Just tp -> Just $ pictures [composed tp, composed up]
+                  Nothing -> Just $ pictures (((plain' pos) up):shakenp)
+                  Just tp -> Just $ pictures ([composed tp, composed up] ++ shakenp)
                   where
                     up = getUnit blib f u
+                    shakenp = if (Just pos) == mp
+                              then [(selectColor f) (shaken blib)]
+                              else []
 
 -- | Get the corresponding picture for a given tile.
 getTile :: BitmapLib -> Position -> Board -> Maybe (Composable Picture)
