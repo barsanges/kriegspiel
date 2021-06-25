@@ -18,6 +18,7 @@ module Kriegspiel.Game.Board (
   width,
   height,
   mkPosition,
+  toInt,
   bempty,
   half,
   northern,
@@ -96,6 +97,10 @@ mkPosition :: Int -> Int -> Maybe Position
 mkPosition x y = if (x >= 1) && (x <= width) && (y >= 1) && (y <= height)
                  then Just (P x y)
                  else Nothing
+
+-- | Turn a position to a pair of integers.
+toInt :: Position -> (Int, Int)
+toInt (P x y) = (x, y)
 
 -- | Get all the positions supplied for a given faction.
 resupply :: Supply -- ^ Stores
