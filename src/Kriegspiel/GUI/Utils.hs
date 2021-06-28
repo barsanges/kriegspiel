@@ -176,7 +176,7 @@ place :: Position -> Picture -> Picture
 place pos p = translate x y p
   where
     (i, j) = toInt pos
-    x = gridLeftBound + cellEdge * (-0.5 + fromIntegral i) + lineWidth * (fromIntegral i)
+    x = gridLeftBound + cellEdge * (-0.5 + fromIntegral i) + lineWidth * (fromIntegral i) - 1
     y = gridUpperBound - cellEdge * (-0.5 + fromIntegral j) - lineWidth * (fromIntegral j)
 
 -- | Draw the markers on the board.
