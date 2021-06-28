@@ -13,6 +13,7 @@ module Kriegspiel.GUI.Utils (
   mkBitmapLib,
   grid,
   setMarkers,
+  showSupply,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -226,3 +227,18 @@ getUnit blib f u = case u of
   Cavalry -> (selectComposable f) (cavalry blib)
   Artillery -> (selectComposable f) (artillery blib)
   MountedArtillery -> (selectComposable f) (mountedArtillery blib)
+
+-- | Show all supplied positions for a given faction.
+showSupply :: Faction -> Board -> Picture
+showSupply f b = pictures (catMaybes (fmap go allPositions))
+  where
+    allPositions = S.toList whole
+    col = case f of
+      North -> makeColor 1 0 0 0.2
+      South -> makeColor 0 0 1 0.2
+    pic = rectangleSolid cellEdge cellEdge
+
+    go :: Position -> Maybe Picture
+    go pos = if supplied b f pos
+             then Just $ place pos (color col pic)
+             else Nothing
