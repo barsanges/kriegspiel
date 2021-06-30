@@ -231,8 +231,8 @@ getUnit blib f u = case u of
   MountedArtillery -> (selectComposable f) (mountedArtillery blib)
 
 -- | Show all supplied positions for a given faction.
-showSupply :: Faction -> Board -> Picture
-showSupply f b = pictures (catMaybes (fmap go allPositions))
+showSupply :: Faction -> Board -> S.Set Position -> Picture
+showSupply f b xs = pictures (catMaybes (fmap go allPositions))
   where
     allPositions = S.toList whole
     col = case f of
@@ -241,7 +241,7 @@ showSupply f b = pictures (catMaybes (fmap go allPositions))
     pic = rectangleSolid cellEdge cellEdge
 
     go :: Position -> Maybe Picture
-    go pos = if supplied b f pos
+    go pos = if (supplied b f pos) && (S.notMember pos xs)
              then Just $ place pos (color col pic)
              else Nothing
 
