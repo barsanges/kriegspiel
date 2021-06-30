@@ -45,7 +45,9 @@ data BitmapLib = BL { mountain :: Picture,
                       infantry :: Composable Colored,
                       cavalry :: Composable Colored,
                       artillery :: Composable Colored,
-                      mountedArtillery :: Composable Colored }
+                      mountedArtillery :: Composable Colored,
+                      title :: Picture,
+                      twoPlayers :: Picture }
 
 -- | Get the northern version of the picture.
 northPicture :: Colored -> Picture
@@ -119,6 +121,8 @@ mkBitmapLib fp = do
   cav <- mkComposableColored (fp ++ "cavalry")
   art <- mkComposableColored (fp ++ "artillery")
   mart <- mkComposableColored (fp ++ "mounted-artillery")
+  t <- loadBMP (fp ++ "title.bmp")
+  twoP <- loadBMP (fp ++ "two-players.bmp")
   return (BL { mountain  = mntn,
                fortress = fort,
                pass = pss,
@@ -129,7 +133,9 @@ mkBitmapLib fp = do
                infantry = inf,
                cavalry = cav,
                artillery = art,
-               mountedArtillery = mart })
+               mountedArtillery = mart,
+               title = t,
+               twoPlayers = twoP })
 
 -- | Height of the game window (in pixels).
 windowHeight :: Int
