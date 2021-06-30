@@ -14,6 +14,8 @@ module Kriegspiel.GUI.Utils (
   grid,
   setMarkers,
   showSupply,
+  highlight,
+  highlightTwice,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -242,3 +244,24 @@ showSupply f b = pictures (catMaybes (fmap go allPositions))
     go pos = if supplied b f pos
              then Just $ place pos (color col pic)
              else Nothing
+
+-- | Highlight a cell.
+highlight :: Faction -> Position -> Picture
+highlight f pos = place pos (color col pic)
+  where
+    col = case f of
+      North -> red
+      South -> blue
+    pic = pictures [rectangleWire (cellEdge + 3.5) (cellEdge + 3),
+                    rectangleWire (cellEdge + 1.5) (cellEdge + 2),
+                    rectangleWire (cellEdge + 0.5) (cellEdge + 1),
+                    rectangleWire (cellEdge - 0.5) (cellEdge - 1)]
+
+-- | Highlight a cell in two ways.
+highlightTwice :: Faction -> Position -> Picture
+highlightTwice f pos = pictures [highlight f pos, pic]
+  where
+    col = case f of
+      North -> makeColor 1 0 0 0.4
+      South -> makeColor 0 0 1 0.4
+    pic = place pos (color col (rectangleSolid cellEdge cellEdge))
