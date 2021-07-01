@@ -8,7 +8,6 @@ Phases of the game: placement, movement, etc.
 
 module Kriegspiel.Game.Phase (
   Phase(..),
-  Placing'(..),
   Retreating'(..),
   Moving'(..),
   Attacking'(..)
@@ -19,17 +18,10 @@ import qualified Data.Set as S
 import Kriegspiel.Game.Board
 
 -- | A phase of the game.
-data Phase = Placing Placing'
-           | Retreating Retreating'
+data Phase = Retreating Retreating'
            | Moving Moving'
            | Attacking Attacking'
            | Victory Faction
-  deriving (Eq, Show)
-
--- | Informations related to a "Placing" phase.
-data Placing' = Placing' { pplayer :: Faction,
-                           ptodo :: M.Map Unit Int
-                         }
   deriving (Eq, Show)
 
 -- | Informations related to a "Retreating" phase.

@@ -21,15 +21,13 @@ import Kriegspiel.Game.Utils
 p_ :: Int -> Int -> Position
 p_ x y = fromJust $ mkPosition x y
 
-placementsComp01 :: M.Map Position (Either GameState (M.Map Unit GameState))
-placementsComp01 = placements (GS phase b)
+placementsComp01 :: M.Map Position (Either Placing (M.Map Unit Placing))
+placementsComp01 = placements (Placing North todo b)
   where
-    phase = Placing $ Placing' { pplayer = North,
-                                 ptodo = M.fromList [(MountedSupplier, 1),
-                                                     (Infantry, 7),
-                                                     (Cavalry, 4),
-                                                     (MountedArtillery, 1)]
-                               }
+    todo = M.fromList [(MountedSupplier, 1),
+                        (Infantry, 7),
+                        (Cavalry, 4),
+                        (MountedArtillery, 1)]
     b = let go (p, u, f) b0 = add' b0 p u f
         in foldr go bempty [(p_ 1 1, Supplier, North),
                             (p_ 2 1, Infantry, North),
@@ -39,7 +37,7 @@ placementsComp01 = placements (GS phase b)
 placementsTest01 :: M.Map Position (S.Set Unit)
 placementsTest01 = M.filter (not . S.null) (M.map go placementsComp01)
   where
-    go :: Either GameState (M.Map Unit GameState) -> S.Set Unit
+    go :: Either Placing (M.Map Unit Placing) -> S.Set Unit
     go (Left _) = S.empty
     go (Right m) = M.keysSet m
 
@@ -61,20 +59,18 @@ placementsExp01 = fromKeys (\ _ -> us) ps
                                             p_ 13 3])
     us = S.fromList [MountedSupplier, Infantry, Cavalry, MountedArtillery]
 
-placementsTest02 :: Maybe GameState
+placementsTest02 :: Maybe Placing
 placementsTest02 = case placementsComp01 M.! (p_ 8 2) of
                      Left _ -> Nothing
                      Right m -> M.lookup Cavalry m
 
-placementsExp02 :: Maybe GameState
-placementsExp02 = Just (GS phase b)
+placementsExp02 :: Maybe Placing
+placementsExp02 = Just (Placing North todo b)
   where
-    phase = Placing $ Placing' { pplayer = North,
-                                 ptodo = M.fromList [(MountedSupplier, 1),
-                                                     (Infantry, 7),
-                                                     (Cavalry, 3),
-                                                     (MountedArtillery, 1)]
-                               }
+    todo = M.fromList [(MountedSupplier, 1),
+                        (Infantry, 7),
+                        (Cavalry, 3),
+                        (MountedArtillery, 1)]
     b = let go (p, u, f) b0 = add' b0 p u f
         in foldr go bempty [(p_ 1 1, Supplier, North),
                             (p_ 2 1, Infantry, North),
@@ -82,21 +78,19 @@ placementsExp02 = Just (GS phase b)
                             (p_ 4 1, Artillery, North),
                             (p_ 8 2, Cavalry, North)]
 
-placementsTest03 :: Maybe GameState
+placementsTest03 :: Maybe Placing
 placementsTest03 = case placementsComp01 M.! (p_ 1 1) of
-                     Left gs -> Just gs
+                     Left pl -> Just pl
                      Right _ -> Nothing
 
-placementsExp03 :: Maybe GameState
-placementsExp03 = Just (GS phase b)
+placementsExp03 :: Maybe Placing
+placementsExp03 = Just (Placing North todo b)
   where
-    phase = Placing $ Placing' { pplayer = North,
-                                 ptodo = M.fromList [(Supplier, 1),
-                                                     (MountedSupplier, 1),
-                                                     (Infantry, 7),
-                                                     (Cavalry, 4),
-                                                     (MountedArtillery, 1)]
-                               }
+    todo = M.fromList [(Supplier, 1),
+                        (MountedSupplier, 1),
+                        (Infantry, 7),
+                        (Cavalry, 4),
+                        (MountedArtillery, 1)]
     b = let go (p, u, f) b0 = add' b0 p u f
         in foldr go bempty [(p_ 2 1, Infantry, North),
                             (p_ 3 1, Infantry, North),
@@ -105,12 +99,9 @@ placementsExp03 = Just (GS phase b)
 mergeTest01 :: Maybe GameState
 mergeTest01 = merge mergeComp01North mergeComp01South
 
-mergeComp01North :: GameState
-mergeComp01North = (GS phase b)
+mergeComp01North :: Placing
+mergeComp01North = (Placing North M.empty b)
   where
-    phase = Placing $ Placing' { pplayer = North,
-                                 ptodo = M.empty
-                               }
     b = let go (p, u, f) b0 = add' b0 p u f
         in foldr go bempty [(p_ 1 1, Infantry, North),
                             (p_ 2 1, Infantry, North),
@@ -130,12 +121,9 @@ mergeComp01North = (GS phase b)
                             (p_ 16 1, Supplier, North),
                             (p_ 17 1, MountedSupplier, North)]
 
-mergeComp01South :: GameState
-mergeComp01South = (GS phase b)
+mergeComp01South :: Placing
+mergeComp01South = (Placing South M.empty b)
   where
-    phase = Placing $ Placing' { pplayer = South,
-                                 ptodo = M.empty
-                               }
     b = let go (p, u, f) b0 = add' b0 p u f
         in foldr go bempty [(p_ 1 20, Infantry, South),
                             (p_ 2 20, Infantry, South),
