@@ -17,6 +17,8 @@ module Kriegspiel.GUI.Utils (
   highlight,
   highlightTwice,
   phaseTitle,
+  supplyButton,
+  toggleSupply,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -25,6 +27,7 @@ module Kriegspiel.GUI.Utils (
 
 import Data.Maybe ( catMaybes )
 import qualified Data.Set as S
+import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Bitmap ( loadBMP )
 import Kriegspiel.Game.Board
@@ -49,6 +52,9 @@ data BitmapLib = BL { mountain :: Picture,
                       mountedArtillery :: Composable Colored,
                       gameTitle :: Picture,
                       placementTitle :: Colored,
+                      showNoSupply :: Picture,
+                      showNorthSupply :: Picture,
+                      showSouthSupply :: Picture,
                       twoPlayers :: Picture
                     }
 
@@ -126,6 +132,9 @@ mkBitmapLib fp = do
   mart <- mkComposableColored (fp ++ "mounted-artillery")
   gt <- loadBMP (fp ++ "game-title.bmp")
   pt <- mkColored (fp ++ "placement-title")
+  no <- loadBMP (fp ++ "supply-none.bmp")
+  ns <- loadBMP (fp ++ "supply-north.bmp")
+  ss <- loadBMP (fp ++ "supply-south.bmp")
   twoP <- loadBMP (fp ++ "two-players.bmp")
   return (BL { mountain  = mntn,
                fortress = fort,
@@ -140,6 +149,9 @@ mkBitmapLib fp = do
                mountedArtillery = mart,
                gameTitle = gt,
                placementTitle = pt,
+               showNoSupply = no,
+               showNorthSupply = ns,
+               showSouthSupply = ss,
                twoPlayers = twoP })
 
 -- | Height of the game window (in pixels).
@@ -280,3 +292,26 @@ highlightTwice f pos = pictures [highlight f pos, pic]
 -- | Place the title of the phase.
 phaseTitle :: Faction -> Colored -> Picture
 phaseTitle f pic = translate 0 (0.5 * gridTotalHeight + 20) ((selectColor f) pic)
+
+-- | Display a button for supply lines.
+supplyButton :: BitmapLib -> Maybe Faction -> Picture
+supplyButton blib mf = translate x y pic
+  where
+    x = gridLeftBound + 0.5 * gridTotalWidth
+    y = (-0.5) * gridTotalHeight - 25
+    pic = case mf of
+            Nothing -> showNoSupply blib
+            Just North -> showNorthSupply blib
+            Just South -> showSouthSupply blib
+
+-- | Toggle the display of supply lines.
+toggleSupply :: (Float, Float) -> Maybe Faction -> Maybe Faction
+toggleSupply point ms = if pointInBox point (x, y) (x + 450, y - 36)
+                        then case ms of
+                               Nothing -> Just North
+                               Just North -> Just South
+                               Just South -> Nothing
+                        else ms
+  where
+    x = gridLeftBound + 0.5 * gridTotalWidth - 0.5 * 450
+    y = (-0.5) * gridTotalHeight - 25 + 18
