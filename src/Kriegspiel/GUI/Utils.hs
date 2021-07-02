@@ -16,6 +16,7 @@ module Kriegspiel.GUI.Utils (
   showSupply,
   highlight,
   highlightTwice,
+  phaseTitle,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -46,8 +47,10 @@ data BitmapLib = BL { mountain :: Picture,
                       cavalry :: Composable Colored,
                       artillery :: Composable Colored,
                       mountedArtillery :: Composable Colored,
-                      title :: Picture,
-                      twoPlayers :: Picture }
+                      gameTitle :: Picture,
+                      placementTitle :: Colored,
+                      twoPlayers :: Picture
+                    }
 
 -- | Get the northern version of the picture.
 northPicture :: Colored -> Picture
@@ -121,7 +124,8 @@ mkBitmapLib fp = do
   cav <- mkComposableColored (fp ++ "cavalry")
   art <- mkComposableColored (fp ++ "artillery")
   mart <- mkComposableColored (fp ++ "mounted-artillery")
-  t <- loadBMP (fp ++ "title.bmp")
+  gt <- loadBMP (fp ++ "game-title.bmp")
+  pt <- mkColored (fp ++ "placement-title")
   twoP <- loadBMP (fp ++ "two-players.bmp")
   return (BL { mountain  = mntn,
                fortress = fort,
@@ -134,7 +138,8 @@ mkBitmapLib fp = do
                cavalry = cav,
                artillery = art,
                mountedArtillery = mart,
-               title = t,
+               gameTitle = gt,
+               placementTitle = pt,
                twoPlayers = twoP })
 
 -- | Height of the game window (in pixels).
@@ -271,3 +276,7 @@ highlightTwice f pos = pictures [highlight f pos, pic]
       North -> makeColor 1 0 0 0.4
       South -> makeColor 0 0 1 0.4
     pic = place pos (color col (rectangleSolid cellEdge cellEdge))
+
+-- | Place the title of the phase.
+phaseTitle :: Faction -> Colored -> Picture
+phaseTitle f pic = translate 0 (0.5 * gridTotalHeight + 20) ((selectColor f) pic)

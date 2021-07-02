@@ -10,10 +10,15 @@ module Kriegspiel.GUI.Engine (
   runGame
   ) where
 
+import Data.Maybe ( catMaybes )
+import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.Pure.Game
 import Kriegspiel.GUI.Utils
+import Kriegspiel.Game.GameState
+import Kriegspiel.Game.Placement
 
 data GUI = Menu
+         | NorthPlacement Placing
 
 -- | Run a game.
 runGame :: FilePath -> IO ()
@@ -31,11 +36,19 @@ runGame fp = do
 
 -- | Draw the current state of the GUI.
 draw :: BitmapLib -> GUI -> Picture
-draw blib Menu = pictures [translate 0 (0.25 * (fromIntegral windowHeight)) (title blib),
+draw blib Menu = pictures [translate 0 (0.25 * (fromIntegral windowHeight)) (gameTitle blib),
                            twoPlayers blib]
+draw blib (NorthPlacement (Placing _ mu b)) = pictures (catMaybes [Just (phaseTitle North (placementTitle blib)),
+                                                                   Just grid,
+                                                                   Just (setMarkers blib Nothing b)
+                                                                  ])
 
 -- | Handle input events.
 handle :: Event -> GUI -> GUI
+handle (EventKey (MouseButton LeftButton) Down _ point) Menu = if pointInBox point (-100, 20) (100, -20)
+  then NorthPlacement (initial North)
+  else Menu
+handle _ Menu = Menu
 handle _ g = g
 
 -- | Update the GUI as time goes by.
