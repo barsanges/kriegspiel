@@ -19,6 +19,7 @@ module Kriegspiel.GUI.Utils (
   phaseTitle,
   supplyButton,
   toggleSupply,
+  unitsToPlace,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -26,6 +27,7 @@ module Kriegspiel.GUI.Utils (
   ) where
 
 import Data.Maybe ( catMaybes )
+import qualified Data.Map as M
 import qualified Data.Set as S
 import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.Pure.Game
@@ -55,6 +57,7 @@ data BitmapLib = BL { mountain :: Picture,
                       showNoSupply :: Picture,
                       showNorthSupply :: Picture,
                       showSouthSupply :: Picture,
+                      numbers :: [Picture],
                       twoPlayers :: Picture
                     }
 
@@ -116,6 +119,21 @@ mkComposableColored fp = do
   p <- mkColored fp
   return (Composable c p)
 
+-- | Load number pictures.
+mkNumbers :: FilePath -> IO [Picture]
+mkNumbers fp = do
+  zero <- loadBMP (fp ++ "00.bmp")
+  one <- loadBMP (fp ++ "01.bmp")
+  two <- loadBMP (fp ++ "02.bmp")
+  three <- loadBMP (fp ++ "03.bmp")
+  four <- loadBMP (fp ++ "04.bmp")
+  five <- loadBMP (fp ++ "05.bmp")
+  six <- loadBMP (fp ++ "06.bmp")
+  seven <- loadBMP (fp ++ "07.bmp")
+  eight <- loadBMP (fp ++ "08.bmp")
+  nine <- loadBMP (fp ++ "09.bmp")
+  return [zero, one, two, three, four, five, six, seven, eight, nine]
+
 -- | Load all external (bitmap) pictures used in the game.
 mkBitmapLib :: FilePath -> IO BitmapLib
 mkBitmapLib fp = do
@@ -135,6 +153,7 @@ mkBitmapLib fp = do
   no <- loadBMP (fp ++ "supply-none.bmp")
   ns <- loadBMP (fp ++ "supply-north.bmp")
   ss <- loadBMP (fp ++ "supply-south.bmp")
+  nb <- mkNumbers fp
   twoP <- loadBMP (fp ++ "two-players.bmp")
   return (BL { mountain  = mntn,
                fortress = fort,
@@ -152,6 +171,7 @@ mkBitmapLib fp = do
                showNoSupply = no,
                showNorthSupply = ns,
                showSouthSupply = ss,
+               numbers = nb,
                twoPlayers = twoP })
 
 -- | Height of the game window (in pixels).
@@ -315,3 +335,34 @@ toggleSupply point ms = if pointInBox point (x, y) (x + 450, y - 36)
   where
     x = gridLeftBound + 0.5 * gridTotalWidth - 0.5 * 450
     y = (-0.5) * gridTotalHeight - 25 + 18
+
+-- | Show which units should be placed on the board.
+unitsToPlace :: BitmapLib -> M.Map Unit Int -> Faction -> Picture
+unitsToPlace blib mu f = pictures [translate x1 (0.5 * gridTotalHeight - 4.5 * (cellEdge + 1)) (pic (infantry blib)),
+                                   translate x2 (0.5 * gridTotalHeight - 4.5 * (cellEdge + 1)) (nb Infantry),
+
+                                   translate x1 (0.5 * gridTotalHeight - 6.5 * (cellEdge + 1)) (pic (cavalry blib)),
+                                   translate x2 (0.5 * gridTotalHeight - 6.5 * (cellEdge + 1)) (nb Cavalry),
+
+                                   translate x1 (0.5 * gridTotalHeight - 8.5 * (cellEdge + 1)) (pic (artillery blib)),
+                                   translate x2 (0.5 * gridTotalHeight - 8.5 * (cellEdge + 1)) (nb Artillery),
+
+                                   translate x1 (0.5 * gridTotalHeight - 10.5 * (cellEdge + 1)) (pic (mountedArtillery blib)),
+                                   translate x2 (0.5 * gridTotalHeight - 10.5 * (cellEdge + 1)) (nb MountedArtillery),
+
+                                   translate x1 (0.5 * gridTotalHeight - 13.5 * (cellEdge + 1)) (pic (supplier blib)),
+                                   translate x2 (0.5 * gridTotalHeight - 13.5 * (cellEdge + 1)) (nb Supplier),
+
+                                   translate x1 (0.5 * gridTotalHeight - 15.5 * (cellEdge + 1)) (pic (mountedSupplier blib)),
+                                   translate x2 (0.5 * gridTotalHeight - 15.5 * (cellEdge + 1)) (nb MountedSupplier)
+                                  ]
+  where
+    x1 = gridLeftBound + gridTotalWidth + 2 * cellEdge
+    x2 = x1 + 1.5 * cellEdge
+
+    pic :: Composable Colored -> Picture
+    pic c = pictures [(selectColor f) (plain c),
+                     rectangleWire cellEdge cellEdge]
+
+    nb :: Unit -> Picture
+    nb u = (numbers blib) !! (M.findWithDefault 0 u mu)

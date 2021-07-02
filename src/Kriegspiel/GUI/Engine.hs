@@ -44,7 +44,8 @@ draw blib (NorthPlacement (Placing _ mu b) mshow) =
                        Just (supplyButton blib mshow),
                        Just grid,
                        fmap (\ f -> showSupply f b S.empty) mshow,
-                       Just (setMarkers blib Nothing b)
+                       Just (setMarkers blib Nothing b),
+                       Just (unitsToPlace blib mu North)
                       ])
 
 -- | Handle input events.
