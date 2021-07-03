@@ -20,6 +20,7 @@ module Kriegspiel.GUI.Utils (
   phaseTitle,
   supplyButton,
   toggleSupply,
+  endPlacementButton,
   unitsToPlace,
   clickUnitToPlace,
   clickPosition,
@@ -57,6 +58,7 @@ data BitmapLib = BL { mountain :: Picture,
                       mountedArtillery :: Composable Colored,
                       gameTitle :: Picture,
                       placementTitle :: Colored,
+                      endPlacement :: Picture,
                       showNoSupply :: Picture,
                       showNorthSupply :: Picture,
                       showSouthSupply :: Picture,
@@ -153,6 +155,7 @@ mkBitmapLib fp = do
   mart <- mkComposableColored (fp ++ "mounted-artillery")
   gt <- loadBMP (fp ++ "game-title.bmp")
   pt <- mkColored (fp ++ "placement-title")
+  ep <- loadBMP (fp ++ "end-placement.bmp")
   no <- loadBMP (fp ++ "supply-none.bmp")
   ns <- loadBMP (fp ++ "supply-north.bmp")
   ss <- loadBMP (fp ++ "supply-south.bmp")
@@ -171,6 +174,7 @@ mkBitmapLib fp = do
                mountedArtillery = mart,
                gameTitle = gt,
                placementTitle = pt,
+               endPlacement = ep,
                showNoSupply = no,
                showNorthSupply = ns,
                showSouthSupply = ss,
@@ -343,6 +347,15 @@ toggleSupply point ms = if pointInBox point (x, y) (x + 450, y - 36)
     x = gridLeftBound + 0.5 * gridTotalWidth - 0.5 * 450
     y = (-0.5) * gridTotalHeight - 25 + 18
 
+-- | Display a button to end the placement phase.
+endPlacementButton :: BitmapLib -> M.Map Unit Int -> Maybe Picture
+endPlacementButton blib mu = if mu == M.empty
+  then Just (translate x y (endPlacement blib))
+  else Nothing
+  where
+    x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge
+    y = (-0.5) * gridTotalHeight + 7
+
 -- | Show which units should be placed on the board.
 unitsToPlace :: BitmapLib -> M.Map Unit Int -> Faction -> Picture
 unitsToPlace blib mu f = pictures [translate x1 (0.5 * gridTotalHeight - 4.5 * (cellEdge + 1)) (pic (infantry blib)),
@@ -403,7 +416,6 @@ clickUnitToPlace p
     x2 = x1 + cellEdge
     go :: Float -> Bool
     go y0 = pointInBox p (x1, y0 - 0.5 * cellEdge) (x2, y0 + 0.5 * cellEdge)
-
 
 -- | Get the position on the board associated to a click on the screen.
 clickPosition :: (Float, Float) -> Maybe Position

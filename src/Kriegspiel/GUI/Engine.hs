@@ -48,7 +48,8 @@ draw blib (NorthPlacement (Placing _ mu b) mshow munit mpos) =
                        fmap (highlight North) mpos,
                        Just (setMarkers blib Nothing b),
                        Just (unitsToPlace blib mu North),
-                       fmap (highlightPlacement North) munit
+                       fmap (highlightPlacement North) munit,
+                       endPlacementButton blib mu
                       ])
 
 -- | Handle input events.
@@ -77,13 +78,13 @@ handle (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement (Placing
 
     ms' = toggleSupply point ms
 
-    update :: Maybe a -> Maybe a -> Maybe a
-    update mx my = case my of
+    up :: Maybe a -> Maybe a -> Maybe a
+    up mx my = case my of
       Nothing -> mx
       Just _ -> my
 
-    munit' = update munit (clickUnitToPlace point)
-    mpos' = update mpos (clickPosition point)
+    munit' = up munit (clickUnitToPlace point)
+    mpos' = up mpos (clickPosition point)
 
 handle _ g = g
 
