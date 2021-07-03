@@ -16,10 +16,13 @@ module Kriegspiel.GUI.Utils (
   showSupply,
   highlight,
   highlightTwice,
+  highlightPlacement,
   phaseTitle,
   supplyButton,
   toggleSupply,
   unitsToPlace,
+  clickUnitToPlace,
+  clickPosition,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -288,9 +291,9 @@ showSupply f b xs = pictures (catMaybes (fmap go allPositions))
              then Just $ place pos (color col pic)
              else Nothing
 
--- | Highlight a cell.
-highlight :: Faction -> Position -> Picture
-highlight f pos = place pos (color col pic)
+-- | Common function to highlight a cell (not public).
+baseHighlight :: Faction -> Picture
+baseHighlight f = color col pic
   where
     col = case f of
       North -> red
@@ -299,6 +302,10 @@ highlight f pos = place pos (color col pic)
                     rectangleWire (cellEdge + 1.5) (cellEdge + 2),
                     rectangleWire (cellEdge + 0.5) (cellEdge + 1),
                     rectangleWire (cellEdge - 0.5) (cellEdge - 1)]
+
+-- | Highlight a cell.
+highlight :: Faction -> Position -> Picture
+highlight f pos = place pos (baseHighlight f)
 
 -- | Highlight a cell in two ways.
 highlightTwice :: Faction -> Position -> Picture
@@ -366,3 +373,41 @@ unitsToPlace blib mu f = pictures [translate x1 (0.5 * gridTotalHeight - 4.5 * (
 
     nb :: Unit -> Picture
     nb u = (numbers blib) !! (M.findWithDefault 0 u mu)
+
+-- | Highlight a unit type during the placement phase.
+highlightPlacement :: Faction -> Unit -> Picture
+highlightPlacement f u = translate x y pic
+  where
+    pic = baseHighlight f
+    x = gridLeftBound + gridTotalWidth + 2 * cellEdge
+    y = case u of
+          Infantry -> 0.5 * gridTotalHeight - 4.5 * (cellEdge + 1)
+          Cavalry -> 0.5 * gridTotalHeight - 6.5 * (cellEdge + 1)
+          Artillery -> 0.5 * gridTotalHeight - 8.5 * (cellEdge + 1)
+          MountedArtillery -> 0.5 * gridTotalHeight - 10.5 * (cellEdge + 1)
+          Supplier -> 0.5 * gridTotalHeight - 13.5 * (cellEdge + 1)
+          MountedSupplier -> 0.5 * gridTotalHeight - 15.5 * (cellEdge + 1)
+
+-- | Get the unit to place associated to a click on the screen.
+clickUnitToPlace :: (Float, Float) -> Maybe Unit
+clickUnitToPlace p
+  | go (0.5 * gridTotalHeight - 4.5 * (cellEdge + 1)) = Just Infantry
+  | go (0.5 * gridTotalHeight - 6.5 * (cellEdge + 1)) = Just Cavalry
+  | go (0.5 * gridTotalHeight - 8.5 * (cellEdge + 1)) = Just Artillery
+  | go (0.5 * gridTotalHeight - 10.5 * (cellEdge + 1)) = Just MountedArtillery
+  | go (0.5 * gridTotalHeight - 13.5 * (cellEdge + 1)) = Just Supplier
+  | go (0.5 * gridTotalHeight - 15.5 * (cellEdge + 1)) = Just MountedSupplier
+  | otherwise = Nothing
+  where
+    x1 = gridLeftBound + gridTotalWidth + 1.5 * cellEdge
+    x2 = x1 + cellEdge
+    go :: Float -> Bool
+    go y0 = pointInBox p (x1, y0 - 0.5 * cellEdge) (x2, y0 + 0.5 * cellEdge)
+
+
+-- | Get the position on the board associated to a click on the screen.
+clickPosition :: (Float, Float) -> Maybe Position
+clickPosition (x, y) = mkPosition i j
+  where
+    i = 1 + ((truncate $ x - gridLeftBound) `div` (truncate $ cellEdge + lineWidth))
+    j = 1 + ((truncate $ gridUpperBound - y) `div` (truncate $ cellEdge + lineWidth))
