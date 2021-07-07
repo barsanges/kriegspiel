@@ -21,6 +21,7 @@ import Kriegspiel.Game.Placement
 
 data GUI = Menu
          | NorthPlacement Placing (Maybe Faction) (Maybe Unit) (Maybe Position)
+         | SouthPlacement Placing Placing (Maybe Faction) (Maybe Unit) (Maybe Position)
 
 -- | Run a game.
 runGame :: FilePath -> IO ()
@@ -51,6 +52,17 @@ draw blib (NorthPlacement (Placing _ mu b) mshow munit mpos) =
                        fmap (highlightPlacement North) munit,
                        endPlacementButton blib mu
                       ])
+draw blib (SouthPlacement _ (Placing _ mu b) mshow munit mpos) =
+  pictures (catMaybes [Just (phaseTitle South (placementTitle blib)),
+                       Just (supplyButton blib mshow),
+                       Just grid,
+                       fmap (\ f -> showSupply f b S.empty) mshow,
+                       fmap (highlight South) mpos,
+                       Just (setMarkers blib Nothing b),
+                       Just (unitsToPlace blib mu South),
+                       fmap (highlightPlacement South) munit,
+                       endPlacementButton blib mu
+                      ])
 
 -- | Handle input events.
 handle :: Event -> GUI -> GUI
@@ -58,23 +70,34 @@ handle (EventKey (MouseButton LeftButton) Down _ point) Menu =
   if pointInBox point (-100, 20) (100, -20)
   then NorthPlacement (initial North) Nothing Nothing Nothing
   else Menu
-handle (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement (Placing _ mu b) ms munit mpos) =
-  case mpos' of
-    Nothing -> NorthPlacement p ms' munit' Nothing
+handle (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement p ms munit mpos) =
+  if clickEndPlacement point
+  then SouthPlacement p (initial South) Nothing Nothing Nothing
+  else handlePlacement point p ms munit mpos NorthPlacement
+handle (EventKey (MouseButton LeftButton) Down _ point) (SouthPlacement p p' ms munit mpos) =
+  handlePlacement point p' ms munit mpos (SouthPlacement p)
+handle _ g = g
+
+handlePlacement :: (Float, Float)
+                -> Placing
+                -> Maybe Faction
+                -> Maybe Unit
+                -> Maybe Position
+                -> (Placing -> Maybe Faction -> Maybe Unit -> Maybe Position -> GUI)
+                -> GUI
+handlePlacement point p ms munit mpos ctor = case mpos' of
+    Nothing -> ctor p ms' munit' Nothing
     Just pos -> case M.lookup pos ps of
-      Nothing -> NorthPlacement p ms' munit' Nothing
-      Just (Left p) -> NorthPlacement p ms' Nothing Nothing
+      Nothing -> ctor p ms' munit' Nothing
+      Just (Left p') -> ctor p' ms' Nothing Nothing
       Just (Right mp) -> case munit' of
-        Nothing -> NorthPlacement p ms' Nothing mpos'
+        Nothing -> ctor p ms' Nothing mpos'
         Just u -> case M.lookup u mp of
-          Nothing -> NorthPlacement p ms' Nothing mpos'
-          Just p' -> NorthPlacement p' ms' Nothing Nothing
-
+          Nothing -> ctor p ms' Nothing mpos'
+          Just p' -> ctor p' ms' Nothing Nothing
   where
-    p = Placing North mu b
-
     ps :: M.Map Position (Either Placing (M.Map Unit Placing))
-    ps = placements (Placing North mu b)
+    ps = placements p
 
     ms' = toggleSupply point ms
 
@@ -85,8 +108,6 @@ handle (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement (Placing
 
     munit' = up munit (clickUnitToPlace point)
     mpos' = up mpos (clickPosition point)
-
-handle _ g = g
 
 -- | Update the GUI as time goes by.
 update :: Float -> GUI -> GUI

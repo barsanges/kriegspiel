@@ -21,6 +21,7 @@ module Kriegspiel.GUI.Utils (
   supplyButton,
   toggleSupply,
   endPlacementButton,
+  clickEndPlacement,
   unitsToPlace,
   clickUnitToPlace,
   clickPosition,
@@ -355,6 +356,13 @@ endPlacementButton blib mu = if mu == M.empty
   where
     x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge
     y = (-0.5) * gridTotalHeight + 7
+
+-- | TODO
+clickEndPlacement :: (Float, Float) -> Bool
+clickEndPlacement point = pointInBox point (x, y) (x + 100, y - 100)
+  where
+    x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge - 50
+    y = (-0.5) * gridTotalHeight + 7 + 50
 
 -- | Show which units should be placed on the board.
 unitsToPlace :: BitmapLib -> M.Map Unit Int -> Faction -> Picture
