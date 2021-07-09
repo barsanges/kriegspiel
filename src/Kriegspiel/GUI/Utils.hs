@@ -11,9 +11,9 @@ module Kriegspiel.GUI.Utils (
   windowHeight,
   windowWidth,
   mkBitmapLib,
+  catPictures,
   grid,
-  setMarkers,
-  showSupply,
+  displayBoard,
   highlight,
   highlightTwice,
   highlightPlacement,
@@ -190,6 +190,10 @@ windowHeight = 600
 windowWidth :: Int
 windowWidth = 800
 
+-- | Concatenate pictures.
+catPictures :: [Maybe Picture] -> Picture
+catPictures = pictures . catMaybes
+
 -- | An empty grid delimiting the board.
 grid :: Picture
 grid = pictures (rows ++ cols)
@@ -295,6 +299,21 @@ showSupply f b xs = pictures (catMaybes (fmap go allPositions))
     go pos = if (supplied b f pos) && (S.notMember pos xs)
              then Just $ place pos (color col pic)
              else Nothing
+
+-- | Display the board.
+displayBoard :: BitmapLib
+             -> Picture
+             -> Board
+             -> Maybe Faction
+             -> Maybe Position
+             -> Picture
+displayBoard blib title b mshow mshaken =
+  catPictures [Just title,
+               Just (supplyButton blib mshow),
+               Just grid,
+               fmap (\ f -> showSupply f b S.empty) mshow,
+               Just (setMarkers blib mshaken b)
+              ]
 
 -- | Common function to highlight a cell (not public).
 baseHighlight :: Faction -> Picture

@@ -10,9 +10,7 @@ module Kriegspiel.GUI.Engine (
   runGame
   ) where
 
-import Data.Maybe ( catMaybes )
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.Pure.Game
 import Kriegspiel.GUI.Utils
@@ -42,27 +40,23 @@ draw :: BitmapLib -> GUI -> Picture
 draw blib Menu = pictures [translate 0 (0.25 * (fromIntegral windowHeight)) (gameTitle blib),
                            twoPlayers blib]
 draw blib (NorthPlacement (Placing _ mu b) mshow munit mpos) =
-  pictures (catMaybes [Just (phaseTitle North (placementTitle blib)),
-                       Just (supplyButton blib mshow),
-                       Just grid,
-                       fmap (\ f -> showSupply f b S.empty) mshow,
-                       fmap (highlight North) mpos,
-                       Just (setMarkers blib Nothing b),
-                       Just (unitsToPlace blib mu North),
-                       fmap (highlightPlacement North) munit,
-                       endPlacementButton blib mu
-                      ])
+  catPictures [Just (displayBoard blib title b mshow Nothing),
+               fmap (highlight North) mpos,
+               Just (unitsToPlace blib mu North),
+               fmap (highlightPlacement North) munit,
+               endPlacementButton blib mu
+              ]
+  where
+    title = phaseTitle North (placementTitle blib)
 draw blib (SouthPlacement _ (Placing _ mu b) mshow munit mpos) =
-  pictures (catMaybes [Just (phaseTitle South (placementTitle blib)),
-                       Just (supplyButton blib mshow),
-                       Just grid,
-                       fmap (\ f -> showSupply f b S.empty) mshow,
-                       fmap (highlight South) mpos,
-                       Just (setMarkers blib Nothing b),
-                       Just (unitsToPlace blib mu South),
-                       fmap (highlightPlacement South) munit,
-                       endPlacementButton blib mu
-                      ])
+  catPictures [Just (displayBoard blib title b mshow Nothing),
+               fmap (highlight South) mpos,
+               Just (unitsToPlace blib mu South),
+               fmap (highlightPlacement South) munit,
+               endPlacementButton blib mu
+              ]
+  where
+    title = phaseTitle South (placementTitle blib)
 
 -- | Handle input events.
 handle :: Event -> GUI -> GUI
