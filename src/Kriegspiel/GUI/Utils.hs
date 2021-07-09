@@ -50,7 +50,7 @@ data BitmapLib = BL { mountain :: Picture,
                       fortress :: Composable Picture,
                       pass :: Composable Picture,
                       store :: Composable Colored,
-                      shaken :: Colored,
+                      shakenp :: Colored,
                       supplier :: Composable Colored,
                       mountedSupplier :: Composable Colored,
                       infantry :: Composable Colored,
@@ -166,7 +166,7 @@ mkBitmapLib fp = do
                fortress = fort,
                pass = pss,
                store = st,
-               shaken = shkn,
+               shakenp = shkn,
                supplier = sup,
                mountedSupplier = msup,
                infantry = inf,
@@ -257,13 +257,13 @@ setMarkers blib mp b = pictures (catMaybes (fmap go allPositions))
         pic = case funit b pos of
                 Nothing -> fmap (plain' pos) mtp
                 Just (u, f) -> case mtp of
-                  Nothing -> Just $ pictures (((plain' pos) up):shakenp)
-                  Just tp -> Just $ pictures ([composed tp, composed up] ++ shakenp)
+                  Nothing -> Just $ pictures (((plain' pos) up):shknp)
+                  Just tp -> Just $ pictures ([composed tp, composed up] ++ shknp)
                   where
                     up = getUnit blib f u
-                    shakenp = if (Just pos) == mp
-                              then [(selectColor f) (shaken blib)]
-                              else []
+                    shknp = if (Just pos) == mp
+                            then [(selectColor f) (shakenp blib)]
+                            else []
 
 -- | Get the corresponding picture for a given tile.
 getTile :: BitmapLib -> Position -> Board -> Maybe (Composable Picture)
