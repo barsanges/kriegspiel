@@ -10,10 +10,11 @@ module Kriegspiel.Game.Phase (
   Phase(..),
   Retreating'(..),
   Moving'(..),
-  Attacking'(..)
+  Attacking'(..),
+  player,
+  shaken
   ) where
 
-import qualified Data.Map as M
 import qualified Data.Set as S
 import Kriegspiel.Game.Board
 
@@ -44,3 +45,17 @@ data Attacking' = Attacking' { aplayer :: Faction,
                                ashaken :: Maybe Position
                              }
   deriving (Eq, Show)
+
+-- | Indicates the current player.
+player :: Phase -> Faction
+player (Retreating r) = rplayer r
+player (Moving m) = mplayer m
+player (Attacking a) = aplayer a
+player (Victory f) = f
+
+-- | Get the coordinate of the currently shaken unit, if any.
+shaken :: Phase -> Maybe Position
+shaken (Retreating r) = Just (rshaken r)
+shaken (Moving m) = mshaken m
+shaken (Attacking a) = ashaken a
+shaken (Victory _) = Nothing
