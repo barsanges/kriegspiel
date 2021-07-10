@@ -59,6 +59,7 @@ data BitmapLib = BL { mountain :: Picture,
                       mountedArtillery :: Composable Colored,
                       gameTitle :: Picture,
                       placementTitle :: Colored,
+                      movementTitle :: Colored,
                       endPlacement :: Picture,
                       showNoSupply :: Picture,
                       showNorthSupply :: Picture,
@@ -156,6 +157,7 @@ mkBitmapLib fp = do
   mart <- mkComposableColored (fp ++ "mounted-artillery")
   gt <- loadBMP (fp ++ "game-title.bmp")
   pt <- mkColored (fp ++ "placement-title")
+  mvt <- mkColored (fp ++ "movement-title")
   ep <- loadBMP (fp ++ "end-placement.bmp")
   no <- loadBMP (fp ++ "supply-none.bmp")
   ns <- loadBMP (fp ++ "supply-north.bmp")
@@ -175,6 +177,7 @@ mkBitmapLib fp = do
                mountedArtillery = mart,
                gameTitle = gt,
                placementTitle = pt,
+               movementTitle = mvt,
                endPlacement = ep,
                showNoSupply = no,
                showNorthSupply = ns,
