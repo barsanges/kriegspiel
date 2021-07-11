@@ -21,10 +21,13 @@ module Kriegspiel.GUI.Utils (
   supplyButton,
   toggleSupply,
   endPlacementButton,
-  clickEndPlacement,
+  endMovementButton,
+  endAttackButton,
+  clickEnd,
   unitsToPlace,
   clickUnitToPlace,
   clickPosition,
+  displayMovementsLeft,
   gridTotalWidth,
   gridTotalHeight,
   gridLeftBound,
@@ -38,6 +41,7 @@ import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Data.Bitmap ( loadBMP )
 import Kriegspiel.Game.Board
+import Kriegspiel.Game.Phase
 
 -- | Two versions of the same picture, one for each faction.
 data Colored = Col Picture Picture
@@ -60,7 +64,13 @@ data BitmapLib = BL { mountain :: Picture,
                       gameTitle :: Picture,
                       placementTitle :: Colored,
                       movementTitle :: Colored,
+                      attackTitle :: Colored,
+                      victoryTitle :: Colored,
+                      movementsLeft :: [Picture],
+                      attackPossible :: (Picture, Picture),
                       endPlacement :: Picture,
+                      endMovement :: Picture,
+                      endAttack :: Picture,
                       showNoSupply :: Picture,
                       showNorthSupply :: Picture,
                       showSouthSupply :: Picture,
@@ -141,6 +151,21 @@ mkNumbers fp = do
   nine <- loadBMP (fp ++ "09.bmp")
   return [zero, one, two, three, four, five, six, seven, eight, nine]
 
+mkMovementsLeft :: FilePath -> IO [Picture]
+mkMovementsLeft fp = do
+  one <- loadBMP (fp ++ "-01.bmp")
+  two <- loadBMP (fp ++ "-02.bmp")
+  three <- loadBMP (fp ++ "-03.bmp")
+  four <- loadBMP (fp ++ "-04.bmp")
+  five <- loadBMP (fp ++ "-05.bmp")
+  return [five, four, three, two, one]
+
+mkAttackPossible :: FilePath -> IO (Picture, Picture)
+mkAttackPossible fp = do
+  forbidden <- loadBMP (fp ++ "-00.bmp")
+  allowed <- loadBMP (fp ++ "-01.bmp")
+  return (forbidden, allowed)
+
 -- | Load all external (bitmap) pictures used in the game.
 mkBitmapLib :: FilePath -> IO BitmapLib
 mkBitmapLib fp = do
@@ -158,7 +183,13 @@ mkBitmapLib fp = do
   gt <- loadBMP (fp ++ "game-title.bmp")
   pt <- mkColored (fp ++ "placement-title")
   mvt <- mkColored (fp ++ "movement-title")
+  att <- mkColored (fp ++ "attack-title")
+  vic <- mkColored (fp ++ "victory-title")
+  ml <- mkMovementsLeft (fp ++ "movement-counter")
+  ap <- mkAttackPossible (fp ++ "attack-counter")
   ep <- loadBMP (fp ++ "end-placement.bmp")
+  em <- loadBMP (fp ++ "end-movement.bmp")
+  ea <- loadBMP (fp ++ "end-attack.bmp")
   no <- loadBMP (fp ++ "supply-none.bmp")
   ns <- loadBMP (fp ++ "supply-north.bmp")
   ss <- loadBMP (fp ++ "supply-south.bmp")
@@ -178,7 +209,13 @@ mkBitmapLib fp = do
                gameTitle = gt,
                placementTitle = pt,
                movementTitle = mvt,
+               attackTitle = att,
+               victoryTitle = vic,
+               movementsLeft = ml,
+               attackPossible = ap,
                endPlacement = ep,
+               endMovement = em,
+               endAttack = ea,
                showNoSupply = no,
                showNorthSupply = ns,
                showSouthSupply = ss,
@@ -310,12 +347,12 @@ displayBoard :: BitmapLib
              -> Maybe Faction
              -> Maybe Position
              -> Picture
-displayBoard blib title b mshow mshaken =
+displayBoard blib title b mshow mshkn =
   catPictures [Just title,
                Just (supplyButton blib mshow),
                Just grid,
                fmap (\ f -> showSupply f b S.empty) mshow,
-               Just (setMarkers blib mshaken b)
+               Just (setMarkers blib mshkn b)
               ]
 
 -- | Common function to highlight a cell (not public).
@@ -379,9 +416,23 @@ endPlacementButton blib mu = if mu == M.empty
     x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge
     y = (-0.5) * gridTotalHeight + 7
 
--- | TODO
-clickEndPlacement :: (Float, Float) -> Bool
-clickEndPlacement point = pointInBox point (x, y) (x + 100, y - 100)
+-- | Display a button to end the movement phase.
+endMovementButton :: BitmapLib -> Picture
+endMovementButton blib = translate x y (endMovement blib)
+  where
+    x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge
+    y = (-0.5) * gridTotalHeight + 7
+
+-- | Display a button to end the attack phase.
+endAttackButton :: BitmapLib -> Picture
+endAttackButton blib = translate x y (endAttack blib)
+  where
+    x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge
+    y = (-0.5) * gridTotalHeight + 7
+
+-- | Does the click intend to end the current phase?
+clickEnd :: (Float, Float) -> Bool
+clickEnd point = pointInBox point (x, y) (x + 100, y - 100)
   where
     x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge - 50
     y = (-0.5) * gridTotalHeight + 7 + 50
@@ -453,3 +504,21 @@ clickPosition (x, y) = mkPosition i j
   where
     i = 1 + ((truncate $ x - gridLeftBound) `div` (truncate $ cellEdge + lineWidth))
     j = 1 + ((truncate $ gridUpperBound - y) `div` (truncate $ cellEdge + lineWidth))
+
+-- | Display the number of movements left.
+displayMovementsLeft :: BitmapLib -> Phase -> Maybe Picture
+displayMovementsLeft blib p = case p of
+  Retreating _ -> Just (pictures [translate x y1 ((movementsLeft blib) !! 4),
+                                  translate x y2 (snd (attackPossible blib))
+                                 ])
+  Moving m -> Just (pictures [translate x y1 ((movementsLeft blib) !! (nmoves m)),
+                              translate x y2 ((go (attack m)) (attackPossible blib))
+                             ])
+  _ -> Nothing
+  where
+    x = gridLeftBound + gridTotalWidth + 2.75 * cellEdge
+    y1 = 20
+    y2 = -20
+    go :: Bool -> (a, a) -> a
+    go True = fst
+    go False = snd
