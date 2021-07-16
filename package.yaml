@@ -15,6 +15,7 @@ dependencies:
 - base
 - containers
 - gloss
+- aeson
 
 library:
   source-dirs: src

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : Kriegspiel.Game.Board
    Copyright   : Copyright (C) 2021 barsanges
@@ -43,6 +45,8 @@ module Kriegspiel.Game.Board (
   tile
   ) where
 
+import GHC.Generics
+import Data.Aeson
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Kriegspiel.Game.Faction
@@ -56,7 +60,7 @@ data Board = B { pieces :: M.Map Position (Unit, Faction),
                  sstores :: Supply,
                  ssupply :: S.Set Position
                }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | A position on the board.
 data Position = P Int Int
@@ -76,7 +80,7 @@ data StoreDiff = Same | First | Second
 data Supply = Zero
             | One Position
             | Two Position Position
-  deriving Show
+  deriving (Generic, Show)
 
 instance Eq Supply where
   Zero == Zero = True
@@ -85,6 +89,33 @@ instance Eq Supply where
   One _ == _ = False
   Two p1 p2 == Two q1 q2 = ((p1 == q1) && (p2 == q2)) || ((p1 == q2) && (p2 == q1))
   Two _ _ == _ = False
+
+-- | Serialization.
+instance ToJSON Board
+instance FromJSON Board
+
+instance ToJSON Position where
+  -- toJSON :: Position -> Value
+  toJSON (P i j) = object ["i" .= i, "j" .= j]
+
+instance FromJSON Position where
+  -- parseJSON :: Value -> Parser Position
+  parseJSON = withObject "Position" go
+    where
+      -- go :: Object -> Parser Position
+      go v = do
+        i <- v .: "i"
+        j <- v .: "j"
+        case mkPosition i j of
+          Just p -> return p
+          Nothing -> fail "wrong values"
+
+instance ToJSONKey Position
+
+instance FromJSONKey Position
+
+instance ToJSON Supply
+instance FromJSON Supply
 
 -- | The width of the board.
 width :: Int

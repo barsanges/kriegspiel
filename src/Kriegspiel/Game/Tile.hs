@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.Game.Tile
    Copyright   : Copyright (C) 2021 barsanges
@@ -10,6 +11,13 @@ module Kriegspiel.Game.Tile (
   Tile(..)
   ) where
 
+import GHC.Generics
+import Data.Aeson ( ToJSON, FromJSON )
+
 -- | A tile of the board.
 data Tile = Plain | Fortress | Mountain | Pass
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
+
+-- | Serialization.
+instance ToJSON Tile
+instance FromJSON Tile

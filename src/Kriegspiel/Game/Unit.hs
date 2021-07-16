@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.Game.Unit
    Copyright   : Copyright (C) 2021 barsanges
@@ -17,6 +18,8 @@ module Kriegspiel.Game.Unit (
   dstrength
   ) where
 
+import GHC.Generics
+import Data.Aeson ( ToJSON, FromJSON )
 import Kriegspiel.Game.Tile
 
 -- | A unit on the board.
@@ -26,7 +29,11 @@ data Unit = Supplier
           | Cavalry
           | Artillery
           | MountedArtillery
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Generic, Ord, Show)
+
+-- | Serialization.
+instance ToJSON Unit
+instance FromJSON Unit
 
 -- | Test if a unit is a military unit or a supply unit.
 military :: Unit -> Bool
