@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : Kriegspiel.Game.BoardSpec
    Copyright   : Copyright (C) 2021 barsanges
@@ -9,11 +10,16 @@ Test the module Kriegspiel.Game.Board.
 module Kriegspiel.Game.BoardSpec ( spec ) where
 
 import Test.Hspec
+import Test.QuickCheck
 
+import Data.Aeson ( encode, decode )
 import Data.Maybe ( fromJust )
 import qualified Data.Set as S
 
 import Kriegspiel.Game.Board
+
+instance Arbitrary Position where
+  arbitrary = elements (S.toList $ S.union (half North) (half South))
 
 p_ :: Int -> Int -> Position
 p_ x y = fromJust $ mkPosition x y
@@ -79,6 +85,22 @@ mvTest03 = (sd, muf1, muf2)
 
 spec :: Spec
 spec = do
+  describe "positions" $ do
+    it "can be encoded as a JSON string" $
+      encode (p_ 1 1)  `shouldBe` "{\"j\":1,\"i\":1}"
+
+    it "can be decoded from a JSON string" $
+      (decode "{\"i\":2,\"j\":3}" :: Maybe Position) `shouldBe` (mkPosition 2 3)
+
+    it "cannot always be decoded from a JSON string (1)" $
+      (decode "TODO" :: Maybe Position) `shouldBe` Nothing
+
+    it "cannot always be decoded from a JSON string (2)" $
+      (decode "{\"j\":1,\"i\":30}" :: Maybe Position) `shouldBe` Nothing
+
+    it "the process does not lose any information" $ property $
+      \ p -> (decode . encode) p == (Just p :: Maybe Position)
+
   describe "circle" $ do
     it "returns positions from the board (1)" $
       circle (p_ 1 1) 1 `shouldBe` S.fromList [p_ 2 1,
