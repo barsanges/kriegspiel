@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.Game.GameState
    Copyright   : Copyright (C) 2021 barsanges
@@ -12,9 +13,15 @@ module Kriegspiel.Game.GameState (
   GameState(..)
   ) where
 
+import GHC.Generics ( Generic )
+import Data.Aeson ( ToJSON, FromJSON )
 import Kriegspiel.Game.Board
 import Kriegspiel.Game.Phase
 
 -- | State of the game, i.e. board and current phase.
 data GameState = GS Phase Board
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
+
+-- | Serialization.
+instance ToJSON GameState
+instance FromJSON GameState

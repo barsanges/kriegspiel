@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.Game.Phase
    Copyright   : Copyright (C) 2021 barsanges
@@ -15,7 +16,9 @@ module Kriegspiel.Game.Phase (
   shaken
   ) where
 
+import GHC.Generics ( Generic )
 import qualified Data.Set as S
+import Data.Aeson ( ToJSON, FromJSON )
 import Kriegspiel.Game.Board
 
 -- | A phase of the game.
@@ -23,13 +26,13 @@ data Phase = Retreating Retreating'
            | Moving Moving'
            | Attacking Attacking'
            | Victory Faction
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | Informations related to a "Retreating" phase.
 data Retreating' = Retreating' { rplayer :: Faction,
                                  rshaken :: Position
                                }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | Informations related to a "Moving" phase.
 data Moving' = Moving' { nmoves :: Int,
@@ -38,13 +41,26 @@ data Moving' = Moving' { nmoves :: Int,
                          moved :: S.Set Position,
                          attack :: Bool
                        }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | Informations related to an "Attacking" phase.
 data Attacking' = Attacking' { aplayer :: Faction,
                                ashaken :: Maybe Position
                              }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
+
+-- | Serialization.
+instance ToJSON Phase
+instance FromJSON Phase
+
+instance ToJSON Retreating'
+instance FromJSON Retreating'
+
+instance ToJSON Moving'
+instance FromJSON Moving'
+
+instance ToJSON Attacking'
+instance FromJSON Attacking'
 
 -- | Indicates the current player.
 player :: Phase -> Faction
