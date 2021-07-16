@@ -11,7 +11,7 @@ module Kriegspiel.Game.Tile (
   Tile(..)
   ) where
 
-import GHC.Generics
+import GHC.Generics ( Generic )
 import Data.Aeson ( ToJSON, FromJSON )
 
 -- | A tile of the board.

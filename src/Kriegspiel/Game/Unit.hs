@@ -18,7 +18,7 @@ module Kriegspiel.Game.Unit (
   dstrength
   ) where
 
-import GHC.Generics
+import GHC.Generics ( Generic )
 import Data.Aeson ( ToJSON, FromJSON )
 import Kriegspiel.Game.Tile
 

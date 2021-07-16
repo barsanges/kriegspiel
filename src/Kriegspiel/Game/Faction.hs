@@ -12,7 +12,7 @@ module Kriegspiel.Game.Faction (
   other
   ) where
 
-import GHC.Generics
+import GHC.Generics ( Generic )
 import Data.Aeson ( ToJSON, FromJSON )
 
 -- | One of the two factions.

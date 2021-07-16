@@ -45,7 +45,7 @@ module Kriegspiel.Game.Board (
   tile
   ) where
 
-import GHC.Generics
+import GHC.Generics ( Generic )
 import Data.Aeson
 import qualified Data.Map as M
 import qualified Data.Set as S
