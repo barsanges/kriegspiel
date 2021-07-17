@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.Game.Placement
    Copyright   : Copyright (C) 2021 barsanges
@@ -14,6 +15,8 @@ module Kriegspiel.Game.Placement (
   merge
   ) where
 
+import GHC.Generics ( Generic )
+import Data.Aeson ( ToJSON, FromJSON )
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Kriegspiel.Game.GameState
@@ -23,7 +26,10 @@ type Placements = M.Map Position (Either Placing (M.Map Unit Placing))
 
 -- | Informations related to a "Placing" phase.
 data Placing = Placing Faction (M.Map Unit Int) Board
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
+
+instance ToJSON Placing
+instance FromJSON Placing
 
 -- | Initialise a new game.
 initial :: Faction -> Placing
