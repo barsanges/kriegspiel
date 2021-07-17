@@ -19,7 +19,7 @@ module Kriegspiel.Game.Unit (
   ) where
 
 import GHC.Generics ( Generic )
-import Data.Aeson ( ToJSON, FromJSON )
+import Data.Aeson ( ToJSON, FromJSON, ToJSONKey, FromJSONKey )
 import Kriegspiel.Game.Tile
 
 -- | A unit on the board.
@@ -34,6 +34,8 @@ data Unit = Supplier
 -- | Serialization.
 instance ToJSON Unit
 instance FromJSON Unit
+instance ToJSONKey Unit
+instance FromJSONKey Unit
 
 -- | Test if a unit is a military unit or a supply unit.
 military :: Unit -> Bool
