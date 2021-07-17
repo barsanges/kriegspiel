@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.GUI.Engine
    Copyright   : Copyright (C) 2021 barsanges
@@ -10,9 +11,11 @@ module Kriegspiel.GUI.Engine (
   runGame
   ) where
 
+import GHC.Generics ( Generic )
+import Data.Aeson ( ToJSON, FromJSON, encodeFile )
 import qualified Data.Map as M
 import Graphics.Gloss.Data.Point
-import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.IO.Game
 import Kriegspiel.GUI.Utils
 import Kriegspiel.Game.Attack
 import Kriegspiel.Game.GameState
@@ -23,18 +26,22 @@ data GUI = Menu
          | NorthPlacement Placing (Maybe Faction) (Maybe Unit) (Maybe Position)
          | SouthPlacement Placing Placing (Maybe Faction) (Maybe Unit) (Maybe Position)
          | PlayerTurn GameState (Maybe Faction) (Maybe Position)
+  deriving Generic
+
+instance ToJSON GUI
+instance FromJSON GUI
 
 -- | Run a game.
-runGame :: FilePath -> IO ()
-runGame fp = do
+runGame :: FilePath -> FilePath -> IO ()
+runGame fp sp = do
   blib <- mkBitmapLib fp
-  play window
+  playIO window
     white
     10 -- Simulation steps per second
     Menu
-    (draw blib)
-    handle
-    update
+    (pure . (draw blib))
+    (handle sp)
+    (\ x w -> pure $ update x w)
   where
     window = InWindow "Kriegspiel" (windowWidth, windowHeight) (10, 10)
 
@@ -118,29 +125,33 @@ drawAttack blib (GS p b) mshow _ = pictures ([displayBoard blib title b mshow (s
     go :: (AttackResult, GameState) -> Bool
     go (a, _) = a == Defeated
 
+-- | Save the state of the game to a file.
+save :: FilePath -> GUI -> IO GUI
+save fp g = (encodeFile fp g) *> (pure g)
+
 -- | Handle input events.
-handle :: Event -> GUI -> GUI
-handle (EventKey (MouseButton LeftButton) Down _ point) Menu =
+handle :: FilePath -> Event -> GUI -> IO GUI
+handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu =
   if pointInBox point (-100, 20) (100, -20)
-  then NorthPlacement (initial North) Nothing Nothing Nothing
-  else Menu
-handle (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement p ms munit mpos) =
+  then save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
+  else pure Menu
+handle fp (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement p ms munit mpos) =
   if clickEnd point
-  then SouthPlacement p (initial South) Nothing Nothing Nothing
-  else handlePlacement point p ms munit mpos NorthPlacement
-handle (EventKey (MouseButton LeftButton) Down _ point) (SouthPlacement p p' ms munit mpos) =
+  then save fp $ SouthPlacement p (initial South) Nothing Nothing Nothing
+  else save fp $ handlePlacement point p ms munit mpos NorthPlacement
+handle fp (EventKey (MouseButton LeftButton) Down _ point) (SouthPlacement p p' ms munit mpos) =
   if clickEnd point
   then case merge p p' of
-    Nothing -> handlePlacement point p' ms munit mpos (SouthPlacement p)
-    Just gs -> PlayerTurn gs Nothing Nothing
-  else handlePlacement point p' ms munit mpos (SouthPlacement p)
-handle (EventKey (MouseButton LeftButton) Down _ point) (PlayerTurn (GS p b) mshow mpos) =
+    Nothing -> save fp $ handlePlacement point p' ms munit mpos (SouthPlacement p)
+    Just gs -> save fp $ PlayerTurn gs Nothing Nothing
+  else save fp $ handlePlacement point p' ms munit mpos (SouthPlacement p)
+handle fp (EventKey (MouseButton LeftButton) Down _ point) (PlayerTurn (GS p b) mshow mpos) =
   case p of
-    Retreating _ -> handleMovement point (GS p b) mshow mpos
-    Moving _ -> handleMovement point (GS p b) mshow mpos
-    Attacking _ -> handleAttack point (GS p b) mshow mpos
-    Victory _ -> PlayerTurn (GS p b) Nothing Nothing
-handle _ g = g
+    Retreating _ -> save fp $ handleMovement point (GS p b) mshow mpos
+    Moving _ -> save fp $ handleMovement point (GS p b) mshow mpos
+    Attacking _ -> save fp $ handleAttack point (GS p b) mshow mpos
+    Victory _ -> save fp $ PlayerTurn (GS p b) Nothing Nothing
+handle _ _ g = pure g
 
 handlePlacement :: (Float, Float)
                 -> Placing

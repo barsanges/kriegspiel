@@ -25,6 +25,7 @@ executables:
     main:             Main.hs
     source-dirs:      ks-gui
     dependencies:
+    - directory
     - kriegspiel
 
 tests:

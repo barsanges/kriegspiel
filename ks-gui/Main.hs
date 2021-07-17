@@ -7,8 +7,11 @@ Run a game.
 -}
 
 module Main where
+import System.Directory ( getHomeDirectory )
 import Kriegspiel.GUI.Engine
 
 -- | Application entry point.
 main :: IO ()
-main = runGame "assets/"
+main = do
+  home <- getHomeDirectory
+  runGame "assets/" (home ++ "/.kriegspiel")
