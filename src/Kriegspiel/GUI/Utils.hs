@@ -75,6 +75,7 @@ data BitmapLib = BL { mountain :: Picture,
                       showNorthSupply :: Picture,
                       showSouthSupply :: Picture,
                       numbers :: [Picture],
+                      load :: Picture,
                       twoPlayers :: Picture
                     }
 
@@ -194,6 +195,7 @@ mkBitmapLib fp = do
   ns <- loadBMP (fp ++ "supply-north.bmp")
   ss <- loadBMP (fp ++ "supply-south.bmp")
   nb <- mkNumbers fp
+  lo <- loadBMP (fp ++ "load.bmp")
   twoP <- loadBMP (fp ++ "two-players.bmp")
   return (BL { mountain  = mntn,
                fortress = fort,
@@ -220,6 +222,7 @@ mkBitmapLib fp = do
                showNorthSupply = ns,
                showSouthSupply = ss,
                numbers = nb,
+               load = lo,
                twoPlayers = twoP })
 
 -- | Height of the game window (in pixels).

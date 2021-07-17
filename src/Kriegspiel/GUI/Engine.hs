@@ -12,8 +12,9 @@ module Kriegspiel.GUI.Engine (
   ) where
 
 import GHC.Generics ( Generic )
-import Data.Aeson ( ToJSON, FromJSON, encodeFile )
+import Data.Aeson ( ToJSON, FromJSON, encodeFile, decodeFileStrict' )
 import qualified Data.Map as M
+import Data.Maybe ( fromMaybe )
 import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.IO.Game
 import Kriegspiel.GUI.Utils
@@ -48,7 +49,8 @@ runGame fp sp = do
 -- | Draw the current state of the GUI.
 draw :: BitmapLib -> GUI -> Picture
 draw blib Menu = pictures [translate 0 (0.25 * (fromIntegral windowHeight)) (gameTitle blib),
-                           twoPlayers blib]
+                           translate 0 40 (load blib),
+                           translate 0 (-40) (twoPlayers blib)]
 draw blib (NorthPlacement (Placing _ mu b) mshow munit mpos) =
   catPictures [Just (displayBoard blib title b mshow Nothing),
                fmap (highlight North) mpos,
@@ -131,10 +133,10 @@ save fp g = (encodeFile fp g) *> (pure g)
 
 -- | Handle input events.
 handle :: FilePath -> Event -> GUI -> IO GUI
-handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu =
-  if pointInBox point (-100, 20) (100, -20)
-  then save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
-  else pure Menu
+handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu
+  | pointInBox point (-100, 60) (100, 20) = fmap (\ mg -> fromMaybe Menu mg) (decodeFileStrict' fp)
+  | pointInBox point (-100, -20) (100, -60) = save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
+  | otherwise = pure Menu
 handle fp (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement p ms munit mpos) =
   if clickEnd point
   then save fp $ SouthPlacement p (initial South) Nothing Nothing Nothing
