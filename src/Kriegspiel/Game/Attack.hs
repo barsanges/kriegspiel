@@ -9,7 +9,9 @@ Admissible attacks depending on the game state.
 module Kriegspiel.Game.Attack (
   Attacks(..),
   AttackResult(..),
-  attacks
+  attacks,
+  offense,
+  defence
   ) where
 
 import qualified Data.Map as M
@@ -64,8 +66,8 @@ resolve b a p
     f = aplayer a
     f' = other f
     stakeholders = bstar p maxrange
-    off = offense b a p stakeholders
-    def = defence b f' p stakeholders
+    off = offense' b a p stakeholders
+    def = defence' b f' p stakeholders
     defeated = Just (Defeated, GS (pend a (Just p)) b)
     b' = rm b p
     destroyed = if S.null (upositions b' f')
@@ -73,10 +75,19 @@ resolve b a p
       else Just (Destroyed, GS (pend a Nothing) b')
 
 -- | Compute the offensive strength of a faction at a given position.
-offense :: Board -> Attacking' -> Position -> Star -> Int
-offense b a p (Star s) = if tile p == Plain
-                         then sum (fmap charge s)
-                         else sum (fmap nocharge s)
+offense :: Board -> Faction -> Maybe Position -> Position -> Int
+offense b f ms p = offense' b a p stakeholders
+  where
+    a =  Attacking' { aplayer = f,
+                      ashaken = ms
+                    }
+    stakeholders = bstar p maxrange
+
+-- | Compute the offensive strength of a faction at a given position.
+offense' :: Board -> Attacking' -> Position -> Star -> Int
+offense' b a p (Star s) = if tile p == Plain
+                          then sum (fmap charge s)
+                          else sum (fmap nocharge s)
   where
     f = aplayer a
     ready p' = (Just p') /= (ashaken a)
@@ -100,8 +111,14 @@ offense b a p (Star s) = if tile p == Plain
             else 0
 
 -- | Compute the defensive strength of a faction at a given position.
-defence :: Board -> Faction -> Position -> Star -> Int
-defence b f p (Star s) = (go2 p) + sum (fmap go1 s)
+defence :: Board -> Faction -> Position -> Int
+defence b f p = defence' b f p stakeholders
+  where
+    stakeholders = bstar p maxrange
+
+-- | Compute the defensive strength of a faction at a given position.
+defence' :: Board -> Faction -> Position -> Star -> Int
+defence' b f p (Star s) = (go2 p) + sum (fmap go1 s)
   where
     go1 :: [Position] -> Int
     go1 ps = sum (fmap go2 ps)
