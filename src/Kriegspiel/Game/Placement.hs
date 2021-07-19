@@ -10,6 +10,7 @@ Admissible placements depending on the game state.
 module Kriegspiel.Game.Placement (
   Placing(..),
   Placements,
+  done,
   initial,
   placements,
   merge
@@ -30,6 +31,10 @@ data Placing = Placing Faction (M.Map Unit Int) Board
 
 instance ToJSON Placing
 instance FromJSON Placing
+
+-- | Test if the placement is finished.
+done :: Placing -> Bool
+done (Placing _ mu _) = M.null mu
 
 -- | Initialise a new game.
 initial :: Faction -> Placing
