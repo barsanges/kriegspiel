@@ -50,7 +50,9 @@ runGame fp sp = do
 draw :: BitmapLib -> GUI -> Picture
 draw blib Menu = pictures [translate 0 (0.25 * (fromIntegral windowHeight)) (gameTitle blib),
                            translate 0 40 (load blib),
-                           translate 0 (-40) (twoPlayers blib)]
+                           translate 0 (-40) (northVsIA blib),
+                           translate 0 (-120) (southVsIA blib),
+                           translate 0 (-200) (twoPlayers blib)]
 draw blib (NorthPlacement (Placing _ mu b) mshow munit mpos) =
   catPictures [Just (displayBoard blib title b mshow Nothing),
                fmap (highlight North) mpos,
@@ -135,7 +137,9 @@ save fp g = (encodeFile fp g) *> (pure g)
 handle :: FilePath -> Event -> GUI -> IO GUI
 handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu
   | pointInBox point (-100, 60) (100, 20) = fmap (\ mg -> fromMaybe Menu mg) (decodeFileStrict' fp)
-  | pointInBox point (-100, -20) (100, -60) = save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
+  | pointInBox point (-100, -20) (100, -60) = pure Menu -- FIXME
+  | pointInBox point (-100, -100) (100, -140) = pure Menu -- FIXME
+  | pointInBox point (-100, -180) (100, -220) = save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
   | otherwise = pure Menu
 handle fp (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement p ms munit mpos) =
   if clickEnd point
