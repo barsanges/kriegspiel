@@ -14,6 +14,7 @@ description:         Please see the README
 dependencies:
 - base
 - containers
+- directory
 - gloss
 - aeson
 
@@ -25,7 +26,6 @@ executables:
     main:             Main.hs
     source-dirs:      ks-gui
     dependencies:
-    - directory
     - kriegspiel
 
 tests:

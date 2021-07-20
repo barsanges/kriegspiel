@@ -12,6 +12,7 @@ module Kriegspiel.GUI.Engine (
   ) where
 
 import GHC.Generics ( Generic )
+import System.Directory ( doesFileExist )
 import Data.Aeson ( ToJSON, FromJSON, encodeFile, decodeFileStrict' )
 import qualified Data.Map as M
 import Data.Maybe ( fromMaybe )
@@ -136,7 +137,11 @@ save fp g = (encodeFile fp g) *> (pure g)
 -- | Handle input events.
 handle :: FilePath -> Event -> GUI -> IO GUI
 handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu
-  | pointInBox point (-100, 60) (100, 20) = fmap (\ mg -> fromMaybe Menu mg) (decodeFileStrict' fp)
+  | pointInBox point (-100, 60) (100, 20) = do
+      test <- doesFileExist fp
+      if test
+        then fmap (\ mg -> fromMaybe Menu mg) (decodeFileStrict' fp)
+        else pure Menu
   | pointInBox point (-100, -20) (100, -60) = pure Menu -- FIXME
   | pointInBox point (-100, -100) (100, -140) = pure Menu -- FIXME
   | pointInBox point (-100, -180) (100, -220) = save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
