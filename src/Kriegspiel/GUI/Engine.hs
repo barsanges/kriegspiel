@@ -142,7 +142,7 @@ handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu
   | pointInBox point (-100, -180) (100, -220) = save fp $ NorthPlacement (initial North) Nothing Nothing Nothing
   | otherwise = pure Menu
 handle fp (EventKey (MouseButton LeftButton) Down _ point) (NorthPlacement p ms munit mpos) =
-  if clickEnd point
+  if (done p) && (clickEnd point)
   then save fp $ SouthPlacement p (initial South) Nothing Nothing Nothing
   else save fp $ handlePlacement point p ms munit mpos NorthPlacement
 handle fp (EventKey (MouseButton LeftButton) Down _ point) (SouthPlacement p p' ms munit mpos) =
