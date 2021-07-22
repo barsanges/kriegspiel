@@ -132,12 +132,14 @@ reachable b f a p = case unit b p of
 hasPath :: Board -> Faction -> Position -> Position -> Bool
 hasPath b f p p'
   | d == 1 = True
-  | d == 2 = any (supplied b f) (S.intersection ps ps')
+  | d == 2 = any go (S.intersection ps ps')
   | otherwise = False
   where
     d = dist p p'
     ps = neighbors p
     ps' = neighbors p'
+    go :: Position -> Bool
+    go x = (supplied b f x) && (free b x)
 
 -- | Test if a movement is an attack ('False') or not ('True').
 noAttack :: Board -> Faction -> Position -> Position -> Bool

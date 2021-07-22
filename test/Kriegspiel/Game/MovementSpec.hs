@@ -228,6 +228,25 @@ movementsTest14 = case movements (GS phase b) of
         in foldr go bempty [(p_ 3 19, Infantry, North),
                             (p_ 3 9, Supplier, North)]
 
+movementsTest15 :: Bool
+movementsTest15 = case movements (GS phase b) of
+                    None _ -> False
+                    Mandatory _ _ -> False
+                    Optional _ m -> M.notMember (p_ 5 9) (m M.! (p_ 3 11))
+  where
+    phase = Moving $ Moving' { nmoves = 3,
+                               mplayer = South,
+                               mshaken = Nothing,
+                               moved = S.fromList [p_ 3 10, p_ 4 10, p_ 4 11],
+                               attack = False
+                             }
+    b = let go (p, u, f) b0 = add' b0 p u f
+        in foldr go bempty [(p_ 25 2, Infantry, North),
+                            (p_ 3 10, Infantry, South),
+                            (p_ 4 10, Infantry, South),
+                            (p_ 3 11, Cavalry, South),
+                            (p_ 4 11, Infantry, South)]
+
 spec :: Spec
 spec = do
   describe "movements" $ do
@@ -319,3 +338,6 @@ spec = do
 
     it "a unit cannot retreat on an ennemy store" $
       movementsTest14 `shouldBe` True
+
+    it "a unit cannot move over another unit" $
+      movementsTest15 `shouldBe` True
