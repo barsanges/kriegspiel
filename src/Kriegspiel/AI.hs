@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Kriegspiel.AI
    Copyright   : Copyright (C) 2021 barsanges
@@ -14,6 +15,8 @@ module Kriegspiel.AI (
   playAI
   ) where
 
+import GHC.Generics ( Generic )
+import Data.Aeson ( ToJSON, FromJSON )
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Kriegspiel.Game.Attack
@@ -24,48 +27,52 @@ import Kriegspiel.Game.Placement
 -- | A parametrized AI.
 data AI = AI { faction :: Faction,
                alpha :: Double,
-               beta :: Maybe (Unit, Faction) -> Double,
-               alpha' :: Double,
-               beta' :: Maybe (Unit, Faction) -> Double
+               alpha' :: Double
              }
+  deriving Generic
+
+instance ToJSON AI
+instance FromJSON AI
 
 -- | Make a new parametrized AI.
 mkAI :: Faction -> AI
 mkAI me = AI { faction = me,
                alpha = 1,
-               beta = b,
-               alpha' = 1,
-               beta' = b'
-             }
-  where
-    b :: Maybe (Unit, Faction) -> Double
-    b Nothing = 1
-    b (Just (u, f)) = if f == me
-      then 0.5
-      else case u of
-             Supplier -> 4
-             MountedSupplier -> 5
-             Infantry -> 1
-             Cavalry -> 2
-             Artillery -> 3
-             MountedArtillery -> 3.5
+               alpha' = 1
+             } -- FIXME: parametrize beta coefficients.
 
-    b' :: Maybe (Unit, Faction) -> Double
-    b' Nothing = 1
-    b' (Just (u, f)) = if f == me
-      then case u of
-             Supplier -> -4
-             MountedSupplier -> -5
-             Infantry -> -1
-             Cavalry -> -2
-             Artillery -> -3
-             MountedArtillery -> -3.5
-      else -0.5
+beta :: AI -> Maybe (Unit, Faction) -> Double
+beta _ Nothing = 1
+beta ai (Just (u, f)) = if f == faction ai
+  then 0.5
+  else case u of
+         Supplier -> 4
+         MountedSupplier -> 5
+         Infantry -> 1
+         Cavalry -> 2
+         Artillery -> 3
+         MountedArtillery -> 3.5
+
+beta' :: AI -> Maybe (Unit, Faction) -> Double
+beta' _ Nothing = 1
+beta' ai (Just (u, f)) = if f == faction ai
+  then case u of
+         Supplier -> -4
+         MountedSupplier -> -5
+         Infantry -> -1
+         Cavalry -> -2
+         Artillery -> -3
+         MountedArtillery -> -3.5
+  else -0.5
 
 -- | One action taken by the AI.
 data Turn = Mov Position Position GameState
           | Att Position GameState
           | Pas GameState
+  deriving Generic
+
+instance FromJSON Turn
+instance ToJSON Turn
 
 -- | Let the AI place its units at the beginning of the game.
 initialAI :: AI -> Placing
@@ -150,8 +157,8 @@ rate ai mp b = sum (S.map go whole)
         off' = fromIntegral (offense b you mp p) :: Double
         def = fromIntegral (defence b me p) :: Double
         def' = fromIntegral (defence b you p) :: Double
-        c = (beta ai) (funit b p)
-        c' = (beta' ai) (funit b p)
+        c = beta ai (funit b p)
+        c' = beta' ai (funit b p)
         d = case spositions b me of
               Zero -> 0
               One p1 -> fromIntegral (dist p p1)
