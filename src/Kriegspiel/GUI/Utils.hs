@@ -18,6 +18,7 @@ module Kriegspiel.GUI.Utils (
   highlightTwice,
   highlightPlacement,
   phaseTitle,
+  phaseTitle',
   supplyButton,
   toggleSupply,
   endPlacementButton,
@@ -392,6 +393,16 @@ highlightTwice f pos = pictures [highlight f pos, pic]
 -- | Place the title of the phase.
 phaseTitle :: Faction -> Colored -> Picture
 phaseTitle f pic = translate 0 (0.5 * gridTotalHeight + 20) ((selectColor f) pic)
+
+-- | Place the title of the phase.
+phaseTitle' :: BitmapLib -> Phase -> Picture
+phaseTitle' blib p = case p of
+  Retreating _ -> phaseTitle current (movementTitle blib)
+  Moving _ -> phaseTitle current (movementTitle blib)
+  Attacking _ -> phaseTitle current (attackTitle blib)
+  Victory f -> phaseTitle f (victoryTitle blib)
+  where
+    current = player p
 
 -- | Display a button for supply lines.
 supplyButton :: BitmapLib -> Maybe Faction -> Picture
