@@ -360,11 +360,10 @@ spositions b South = sstores b
 
 -- | Indicate if there is a store at the given position.
 mstore :: Board -> Position -> Maybe Faction
-mstore b p = if go (nstores b)
-             then Just North
-             else if go (sstores b)
-                  then Just South
-                  else Nothing
+mstore b p
+  | go (nstores b) = Just North
+  | go (sstores b) = Just South
+  | otherwise = Nothing
   where
     go s = case s of
       Zero -> False

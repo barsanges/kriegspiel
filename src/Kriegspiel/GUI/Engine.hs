@@ -15,6 +15,7 @@ import GHC.Generics ( Generic )
 import System.Directory ( doesFileExist )
 import Data.Aeson ( ToJSON, FromJSON, encodeFile, decodeFileStrict' )
 import qualified Data.Map as M
+import Data.Functor ( ($>) )
 import Data.Maybe ( fromMaybe )
 import Graphics.Gloss.Data.Point
 import Graphics.Gloss.Interface.IO.Game
@@ -170,7 +171,7 @@ drawAttack blib (GS p b) mshow _ = pictures ([displayBoard blib title b mshow (s
 
 -- | Save the state of the game to a file.
 save :: FilePath -> GUI -> IO GUI
-save fp g = (encodeFile fp g) *> (pure g)
+save fp g = (encodeFile fp g) $> g
 
 -- | Handle input events.
 handle :: FilePath -> Event -> GUI -> IO GUI
@@ -178,7 +179,7 @@ handle fp (EventKey (MouseButton LeftButton) Down _ point) Menu
   | pointInBox point (-100, 60) (100, 20) = do
       test <- doesFileExist fp
       if test
-        then fmap (\ mg -> fromMaybe Menu mg) (decodeFileStrict' fp)
+        then fmap (fromMaybe Menu) (decodeFileStrict' fp)
         else pure Menu
   | pointInBox point (-100, -20) (100, -60) = save fp $ SinglePlayer aiSouth (Right $ NorthPlacement (initial North) Nothing Nothing Nothing)
   | pointInBox point (-100, -100) (100, -140) = save fp $ SinglePlayer aiNorth (Right $ SouthPlacement (initialAI aiNorth) (initial South) Nothing Nothing Nothing)
@@ -306,12 +307,10 @@ handleAttack point gs ms _ = case attacks gs of
 
 -- | Update the GUI as time goes by.
 update :: Float -> GUI -> GUI
-update dx (SinglePlayer ai (Left (C x gs t ms))) =
-  if x' < aiMoveLen
-  then SinglePlayer ai (Left (C x' gs t ms))
-  else if player p' == faction ai
-       then SinglePlayer ai (Left (C 0 (GS p' b') t' ms))
-       else SinglePlayer ai (Right (PlayerTurn (GS p' b') ms Nothing))
+update dx (SinglePlayer ai (Left (C x gs t ms)))
+  | x' < aiMoveLen = SinglePlayer ai (Left (C x' gs t ms))
+  | player p' == faction ai = SinglePlayer ai (Left (C 0 (GS p' b') t' ms))
+  | otherwise = SinglePlayer ai (Right (PlayerTurn (GS p' b') ms Nothing))
   where
     x' = x + dx
     t' = playAI ai gs

@@ -35,7 +35,7 @@ module Kriegspiel.GUI.Utils (
   gridUpperBound
   ) where
 
-import Data.Maybe ( catMaybes )
+import Data.Maybe ( catMaybes, mapMaybe )
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Graphics.Gloss.Data.Point
@@ -289,7 +289,7 @@ place pos p = translate x y p
 
 -- | Draw the markers on the board.
 setMarkers :: BitmapLib -> Maybe Position -> Board -> Picture
-setMarkers blib mp b = pictures (catMaybes (fmap go allPositions))
+setMarkers blib mp b = pictures (mapMaybe go allPositions)
   where
     allPositions = S.toList whole
 
@@ -337,7 +337,7 @@ getUnit blib f u = case u of
 
 -- | Show all supplied positions for a given faction.
 showSupply :: Faction -> Board -> S.Set Position -> Picture
-showSupply f b xs = pictures (catMaybes (fmap go allPositions))
+showSupply f b xs = pictures (mapMaybe go allPositions)
   where
     allPositions = S.toList whole
     col = case f of

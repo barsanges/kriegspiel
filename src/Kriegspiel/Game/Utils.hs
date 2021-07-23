@@ -27,6 +27,4 @@ fromKeysMaybe f ks = M.mapMaybe f (fromKeys id ks)
 -- | Test if a value verifies several conditions.
 tests :: [a -> Bool] -> a -> Bool
 tests [] _ = True
-tests (f:fs) x = if f x
-  then tests fs x
-  else False
+tests (f:fs) x = f x && tests fs x
