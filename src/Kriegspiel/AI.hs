@@ -8,7 +8,7 @@ Basic AI opponent, that cannot win in practice but should offer some resistance.
 -}
 
 module Kriegspiel.AI (
-  AI,
+  AI(faction),
   Turn(..),
   getState,
   mkAI,
