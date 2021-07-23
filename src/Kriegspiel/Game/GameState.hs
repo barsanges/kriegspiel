@@ -10,7 +10,8 @@ State of the game, i.e. board and current phase.
 module Kriegspiel.Game.GameState (
   module Kriegspiel.Game.Board,
   module Kriegspiel.Game.Phase,
-  GameState(..)
+  GameState(..),
+  player'
   ) where
 
 import GHC.Generics ( Generic )
@@ -25,3 +26,7 @@ data GameState = GS Phase Board
 -- | Serialization.
 instance ToJSON GameState
 instance FromJSON GameState
+
+-- | Indicates the current player.
+player' :: GameState -> Faction
+player' (GS p _) = player p
