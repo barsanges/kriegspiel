@@ -10,6 +10,7 @@ Basic AI opponent, that cannot win in practice but should offer some resistance.
 module Kriegspiel.AI (
   AI,
   Turn(..),
+  getState,
   mkAI,
   initialAI,
   playAI
@@ -73,6 +74,12 @@ data Turn = Mov Position Position GameState
 
 instance FromJSON Turn
 instance ToJSON Turn
+
+-- | Get the 'GameState' from a 'Turn'.
+getState :: Turn -> GameState
+getState (Mov _ _ gs) = gs
+getState (Att _ gs) = gs
+getState (Pas gs) = gs
 
 -- | Let the AI place its units at the beginning of the game.
 initialAI :: AI -> Placing
