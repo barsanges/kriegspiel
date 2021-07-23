@@ -18,6 +18,7 @@ module Kriegspiel.AI (
 
 import GHC.Generics ( Generic )
 import Data.Aeson ( ToJSON, FromJSON )
+import Data.Maybe ( fromJust )
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Kriegspiel.Game.Attack
@@ -83,21 +84,47 @@ getState (Pas gs) = gs
 
 -- | Let the AI place its units at the beginning of the game.
 initialAI :: AI -> Placing
-initialAI ai = go (initial (faction ai))
+initialAI ai = Placing (faction ai) M.empty b
   where
-    go :: Placing -> Placing
-    go pl = if done pl
-            then pl
-            else go (placementsAI ai pl)
-
--- | Choose the best (according to the AI) placement available.
-placementsAI :: AI -> Placing -> Placing
-placementsAI ai pl =
-  case takeBest (\ (Placing _ _ b) -> rate ai Nothing b) (flatten right) of
-    Nothing -> undefined -- Should not happen in practice
-    Just (_, _, pl') -> pl'
-  where
-    (_, right) = M.mapEither id (placements pl)
+    b = let go (p, u, f) b0 = add' b0 p u f
+        in foldr go bempty units
+    p_ :: Int -> Int -> Position -- Unsafe `mkPosition`
+    p_ x y = fromJust $ mkPosition x y
+    units = case (faction ai) of
+      North -> [(p_ 21 2, Supplier, North),
+                (p_ 18 2, MountedSupplier, North),
+                (p_ 13 9, Artillery, North),
+                (p_ 15 10, MountedArtillery, North),
+                (p_ 20 9, Cavalry, North),
+                (p_ 21 9, Cavalry, North),
+                (p_ 17 10, Cavalry, North),
+                (p_ 18 10, Cavalry, North),
+                (p_ 8 4, Infantry, North),
+                (p_ 21 8, Infantry, North),
+                (p_ 12 10, Infantry, North),
+                (p_ 13 10, Infantry, North),
+                (p_ 14 10, Infantry, North),
+                (p_ 16 10, Infantry, North),
+                (p_ 11 10, Infantry, North),
+                (p_ 11 9, Infantry, North),
+                (p_ 12 9, Infantry, North)]
+      South -> [(p_ 8 20, Supplier, South),
+                (p_ 3 12, MountedSupplier, South),
+                (p_ 9 12, Artillery, South),
+                (p_ 8 12, MountedArtillery, South),
+                (p_ 7 11, Cavalry, South),
+                (p_ 7 12, Cavalry, South),
+                (p_ 7 13, Cavalry, South),
+                (p_ 8 11, Cavalry, South),
+                (p_ 3 13 , Infantry, South),
+                (p_ 10 11, Infantry, South),
+                (p_ 10 12, Infantry, South),
+                (p_ 10 13, Infantry, South),
+                (p_ 10 14, Infantry, South),
+                (p_ 9 11, Infantry, South),
+                (p_ 8 13, Infantry, South),
+                (p_ 8 14, Infantry, South),
+                (p_ 8 15, Infantry, South)]
 
 -- | Let the AI play one move.
 playAI :: AI -> GameState -> Turn
