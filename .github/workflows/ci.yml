@@ -27,7 +27,9 @@ jobs:
         key: ${{ runner.os }}-stack
 
     - name: Build
-      run: stack build
+      run: |
+        sudo apt-get install freeglut3-dev
+        stack build
 
     - name: Test
       run: stack test
